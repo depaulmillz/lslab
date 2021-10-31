@@ -4,8 +4,9 @@
 #include <Operations.cuh>
 #include <functional>
 
-#ifndef LSLABEXT_STANDARDSLABS_CUH
-#define LSLABEXT_STANDARDSLABS_CUH
+#pragma once
+
+namespace lslab {
 
 struct data_t {
 
@@ -68,15 +69,6 @@ __forceinline__ __device__ unsigned compare(data_t *const &lhs, data_t *const &r
     return 0;
 }
 
-namespace std {
-    template<>
-    struct std::hash<data_t *> {
-        std::size_t operator()(data_t *&x) {
-            return std::hash<std::string>{}(x->data) ^ std::hash<std::size_t>{}(x->size);
-        }
-    };
-}
-
 template<>
 struct EMPTY<unsigned> {
     static const unsigned value = 0;
@@ -92,5 +84,15 @@ __forceinline__ __device__ unsigned compare(const unsigned long long &lhs, const
     return lhs - rhs;
 }
 
+}
 
-#endif //LSLABEXT_STANDARDSLABS_CUH
+namespace std {
+    template<>
+    struct std::hash<lslab::data_t *> {
+        std::size_t operator()(lslab::data_t *&x) {
+            return std::hash<std::string>{}(x->data) ^ std::hash<std::size_t>{}(x->size);
+        }
+    };
+}
+
+

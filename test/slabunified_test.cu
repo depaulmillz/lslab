@@ -24,6 +24,8 @@
 #include <gtest/gtest.h>
 #include "testheader.cuh"
 
+using namespace lslab;
+
 TEST(slabunified_test, MemoryLeakageTest) {
 
     const int size = 1000;

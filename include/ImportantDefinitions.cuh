@@ -2,8 +2,9 @@
 // Created by depaulsmiller on 9/23/20.
 //
 
-#ifndef GPUHASHMAPS_IMPORTANTDEFINITIONS_CUH
-#define GPUHASHMAPS_IMPORTANTDEFINITIONS_CUH
+#pragma once
+
+namespace lslab {
 
 template<typename T>
 struct EMPTY {
@@ -13,4 +14,4 @@ struct EMPTY {
 template<typename T>
 __forceinline__ __host__ __device__ unsigned compare(const T &lhs, const T &rhs);
 
-#endif //GPUHASHMAPS_IMPORTANTDEFINITIONS_CUH
+}

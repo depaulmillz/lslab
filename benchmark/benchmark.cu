@@ -7,6 +7,8 @@
 #include <Slab.cuh>
 #include <cuda_profiler_api.h>
 
+using namespace lslab;
+
 int main() {
 
     const int size = 1000000;

@@ -8,6 +8,10 @@
 #include <cuda_profiler_api.h>
 #include <unordered_map>
 
+using namespace lslab;
+
+namespace lslab {
+
 template<>
 struct EMPTY<int *> {
     static constexpr int *value = nullptr;
@@ -16,6 +20,8 @@ struct EMPTY<int *> {
 template<>
 __forceinline__ __device__ unsigned compare(int *const &lhs, int *const &rhs) {
     return lhs - rhs;
+}
+
 }
 
 int main() {

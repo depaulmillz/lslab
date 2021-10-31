@@ -1,8 +1,9 @@
 #include "gpuErrchk.cuh"
 #include <iostream>
 
-#ifndef GPUMEMORY_CUH
-#define GPUMEMORY_CUH
+#pragma once
+
+namespace lslab {
 
 template<typename T>
 struct GPUCPUMemory {
@@ -117,4 +118,4 @@ struct GPUCPU2DArray {
     GPUCPUMemory<T> *inner;
 };
 
-#endif
+}

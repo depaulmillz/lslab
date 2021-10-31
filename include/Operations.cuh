@@ -8,8 +8,9 @@
 #include <nvfunctional>
 #include "ImportantDefinitions.cuh"
 
-#ifndef OPERATIONS_CUH
-#define OPERATIONS_CUH
+#pragma once
+
+namespace lslab {
 
 #define SEARCH_NOT_FOUND 0
 #define ADDRESS_LANE 32
@@ -627,5 +628,4 @@ SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, unsigned size,
     return sctx;
 }
 
-
-#endif
+}

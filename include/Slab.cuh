@@ -10,8 +10,9 @@
 #include "gpuErrchk.cuh"
 #include "stdrequestHandler.cuh"
 
-#ifndef SLAB_SLAB_CUH
-#define SLAB_SLAB_CUH
+#pragma once
+
+namespace lslab {
 
 #define DEFAULT_SHOULD_USE_HOST true
 
@@ -507,4 +508,4 @@ private:
 
 };
 
-#endif // SLAB_SLAB_CUH
+}

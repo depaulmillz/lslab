@@ -1,10 +1,11 @@
 #include <cstdio>
 
-#ifndef GPUERRCHK_CU
-#define GPUERRCHK_CU
+#pragma once
 
 #define gpuErrchk(ans)                                                         \
-  { gpuAssert_slab((ans), __FILE__, __LINE__); }
+  { lslab::gpuAssert_slab((ans), __FILE__, __LINE__); }
+namespace lslab {
+
 inline void gpuAssert_slab(cudaError_t code, const char *file, int line,
                       bool abort = true) {
   if (code != cudaSuccess) {
@@ -15,4 +16,4 @@ inline void gpuAssert_slab(cudaError_t code, const char *file, int line,
   }
 }
 
-#endif
+}
