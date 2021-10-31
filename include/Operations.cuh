@@ -5,23 +5,24 @@
 #include <gpuErrchk.cuh>
 #include <gpumemory.cuh>
 #include <iostream>
-#include <nvfunctional>
 #include "ImportantDefinitions.cuh"
 
 #pragma once
 
 namespace lslab {
 
+enum Operation {
+    NOP = 0,
+    GET = 2,
+    PUT = 1,
+    REMOVE = 3
+};
+
 #define SEARCH_NOT_FOUND 0
 #define ADDRESS_LANE 32
 #define VALID_KEY_MASK 0x7fffffffu
 #define DELETED_KEY 0
 
-const unsigned OP_SUCCESS = 2;
-const unsigned OP_NONSUCESS = 3;
-
-
-//const unsigned long long EMPTY = 0;
 const unsigned long long EMPTY_POINTER = 0;
 #define BASE_SLAB 0
 
@@ -579,6 +580,133 @@ warp_operation_replace(bool &is_active, const K &myKey,
         }
     }
 }
+
+/**
+ * Returns value when removed or empty on removal
+ * @tparam K
+ * @tparam V
+ * @param is_active
+ * @param myKey
+ * @param myValue
+ * @param modhash
+ * @param slabs
+ * @param num_of_buckets
+ */
+template<typename K, typename V>
+__forceinline__ __device__ void
+warp_operation_delete_or_replace(bool &is_active, const K &myKey,
+                      V &myValue, const unsigned &modhash,
+                      volatile SlabData<K, V> **__restrict__ slabs, unsigned num_of_buckets, WarpAllocCtx<K, V> ctx, Operation op) {
+    const unsigned laneId = threadIdx.x & 0x1Fu;
+    unsigned long long next = BASE_SLAB;
+    unsigned work_queue = __ballot_sync(~0u, is_active);
+    unsigned last_work_queue = 0;
+    bool foundEmptyNext = false;
+    unsigned long long empty_next = BASE_SLAB;
+
+    while (work_queue != 0) {
+        next = (work_queue != last_work_queue) ? (BASE_SLAB) : next;
+        auto src_lane = (unsigned) (__ffs((int) work_queue) - 1);
+        auto src_key = (K) __shfl_sync(~0u, (unsigned long long) myKey, src_lane);
+        unsigned src_bucket = __shfl_sync(~0u, modhash, (int) src_lane);
+        
+        if(work_queue != last_work_queue){
+            foundEmptyNext = false;
+            LockSlab(BASE_SLAB, src_bucket, laneId, slabs);
+        }
+
+        K read_key =
+                ReadSlabKey(next, src_bucket, laneId, slabs);
+
+        auto masked_ballot = (unsigned) (__ballot_sync(~0u, compare(read_key, src_key) == 0) & VALID_KEY_MASK);
+        
+        if(!foundEmptyNext && read_key == EMPTY<K>::value){
+            foundEmptyNext = true;
+            empty_next = next;
+        }
+        
+        if (masked_ballot != 0) {
+
+            if (src_lane == laneId) {
+                unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
+
+                if(op == REMOVE) {
+                    *(SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets)) = EMPTY<K>::value;
+                    is_active = false;
+                    myValue = ReadSlabValue(next, src_bucket, dest_lane, slabs);
+                    //success = true;
+                } else {
+                    volatile K *addrKey =
+                            (volatile K*) SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                    volatile V *addrValue =
+                            SlabAddressValue(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                    V tmpValue = EMPTY<V>::value;
+                    if (*addrKey == EMPTY<K>::value) {
+                        *addrKey = myKey;
+                    } else {
+                        tmpValue = *addrValue;
+                    }
+                    *addrValue = myValue;
+                    myValue = tmpValue;
+                    is_active = false;
+                }
+                __threadfence_system();
+            }
+
+        } else {
+            unsigned long long next_ptr = __shfl_sync(~0u, (unsigned long long) read_key, ADDRESS_LANE - 1);
+            if (next_ptr == 0) {
+                if(op == REMOVE) {
+                    is_active = false;
+                    myValue = EMPTY<V>::value;
+                } else {
+                    __threadfence_system();
+                    masked_ballot = (int) (__ballot_sync(~0u, foundEmptyNext) & VALID_KEY_MASK);
+                    if (masked_ballot != 0) {
+                        unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
+                        unsigned new_empty_next = __shfl_sync(~0u, empty_next, (int) dest_lane);
+                        if (src_lane == laneId) {
+                            volatile K *addrKey =
+                                    (volatile K*) SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                            volatile V *addrValue =
+                                    SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                            V tmpValue = EMPTY<V>::value;
+                            if (*addrKey == EMPTY<K>::value) {
+                                *addrKey = src_key;
+                            } else {
+                                tmpValue = *addrValue;
+                            }
+                            *addrValue = myValue;
+                            myValue = tmpValue;
+                            __threadfence_system();
+                            is_active = false;
+                        }
+                    } else {
+                        unsigned long long new_slab_ptr = warp_allocate(ctx);
+                        if (laneId == ADDRESS_LANE - 1) {
+                            auto *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1,
+                                                                                   slabs, num_of_buckets);
+                            *((unsigned long long*)slabAddr) = new_slab_ptr;
+                            __threadfence_system();
+                        }
+                        next = new_slab_ptr;
+                    }
+                }
+                //success = false;
+            } else {
+                next = next_ptr;
+            }
+        }
+
+        last_work_queue = work_queue;
+
+        work_queue = __ballot_sync(~0u, is_active);
+        if(work_queue != last_work_queue){
+            UnlockSlab(BASE_SLAB, src_bucket, laneId, slabs);
+        }
+    }
+}
+
 
 template<typename K, typename V>
 SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, unsigned size, int gpuid = 0,

@@ -26,6 +26,10 @@ public:
         warp_operation_delete(threadMask, key, value, hash, slabs, number_of_buckets);
     }
 
+    __forceinline__ __host__ __device__ void modify(K& key, V& value, unsigned hash, Operation op, bool threadMask = false) {
+        warp_operation_delete_or_replace(threadMask, key, value, hash, slabs, number_of_buckets, ctx, op);
+    }
+
 private:
     volatile SlabData<K, V> **slabs;
     unsigned number_of_buckets;
