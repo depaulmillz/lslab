@@ -46,3 +46,5 @@ jobs:
           cc: gcc
           cxx: g++
           run-test: false
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
