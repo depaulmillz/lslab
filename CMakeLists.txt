@@ -7,7 +7,7 @@ include(cmake/config.cmake)
 
 FetchContent_Declare(
         UnifiedMemoryGroupAllocation
-        GIT_REPOSITORY git@github.com:sss-lehigh/UnifiedMemoryGroupAllocation.git
+        GIT_REPOSITORY https://github.com/sss-lehigh/UnifiedMemoryGroupAllocation.git
         GIT_TAG main
 )
 
