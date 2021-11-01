@@ -31,7 +31,6 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.4
         with:
           cuda: 11.2.2
-          linux-local-args: "--toolkit"
           
       - name: Build CMake
         # You may pin to the exact commit or the version.
