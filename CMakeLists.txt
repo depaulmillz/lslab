@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 
 project(LSlab LANGUAGES CUDA CXX)
 
+option(USING_CONAN "Set if building through the conan script" OFF)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
     message(STATUS "SET CMAKE_BUILD_TYPE to Release")
@@ -28,6 +30,8 @@ if(NOT CMAKE_CUDA_ARCHITECTURES)
     message(STATUS "Setting CUDA ARCHITECTURES to ${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
+message(STATUS "Using CUDA ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES}")
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     string(APPEND CMAKE_CUDA_FLAGS " -G -pg")
 endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -44,11 +48,10 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 enable_testing()
 
 add_library(lslab INTERFACE)
-target_include_directories(lslab INTERFACE include) #${CONAN_INCLUDE_DIRS_UMGROUPALLOCATION})
-target_link_libraries(lslab INTERFACE CONAN_PKG::unifiedmemorygroupallocation) #allocator)
-
-#get_target_property(UM_INC CONAN_PKG::UMGroupAllocation INCLUDE_DIRECTORIES)
-#message(STATUS "${UM_INC}")
+target_include_directories(lslab INTERFACE 
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+target_link_libraries(lslab INTERFACE CONAN_PKG::unifiedmemorygroupallocation)
 
 add_executable(lslab_benchmark benchmark/benchmark.cu)
 target_link_libraries(lslab_benchmark lslab)
@@ -66,8 +69,9 @@ install(TARGETS ${TARGETLIST}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
-        )
+        INCLUDES DESTINATION include)
+#
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
 
 set(CPACK_PACKAGE_VENDOR "dePaul Miller et. al.")
 SET(CPACK_GENERATOR "DEB")
