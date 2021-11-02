@@ -1,5 +1,6 @@
 [requires]
 gtest/1.10.0
+unifiedmemorygroupallocation/1.0
 
 [generators]
 cmake

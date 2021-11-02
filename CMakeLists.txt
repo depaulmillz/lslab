@@ -2,17 +2,22 @@ cmake_minimum_required(VERSION 3.18)
 
 project(LSlab LANGUAGES CUDA CXX)
 
-include(FetchContent)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+    message(STATUS "SET CMAKE_BUILD_TYPE to Release")
+endif()
+
+#include(FetchContent)
 include(cmake/config.cmake)
 
-FetchContent_Declare(
-        UnifiedMemoryGroupAllocation
-        GIT_REPOSITORY https://github.com/sss-lehigh/UnifiedMemoryGroupAllocation.git
-        GIT_TAG main
-)
+#FetchContent_Declare(
+#        UnifiedMemoryGroupAllocation
+#        GIT_REPOSITORY git@github.com:sss-lehigh/UnifiedMemoryGroupAllocation.git
+#        GIT_TAG main
+#)
 
 # CMake 3.14+
-FetchContent_MakeAvailable(UnifiedMemoryGroupAllocation)
+#FetchContent_MakeAvailable(UnifiedMemoryGroupAllocation)
 
 check_cuda_version(11.0 11.5)
 set_consistent_standard(11)
@@ -39,8 +44,11 @@ add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 enable_testing()
 
 add_library(lslab INTERFACE)
-target_include_directories(lslab INTERFACE include)
-target_link_libraries(lslab INTERFACE allocator)
+target_include_directories(lslab INTERFACE include) #${CONAN_INCLUDE_DIRS_UMGROUPALLOCATION})
+target_link_libraries(lslab INTERFACE CONAN_PKG::unifiedmemorygroupallocation) #allocator)
+
+#get_target_property(UM_INC CONAN_PKG::UMGroupAllocation INCLUDE_DIRECTORIES)
+#message(STATUS "${UM_INC}")
 
 add_executable(lslab_benchmark benchmark/benchmark.cu)
 target_link_libraries(lslab_benchmark lslab)
@@ -49,8 +57,8 @@ add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
 target_link_libraries(lslab_memory_benchmark lslab)
 
 add_executable(slabunified_test test/slabunified_test.cu)
-target_link_libraries(slabunified_test PRIVATE lslab CONAN_PKG::gtest ${CONAN_LIBS})
-add_test(slabunified_test slabunified_test)
+target_link_libraries(slabunified_test PRIVATE lslab CONAN_PKG::gtest)
+add_test(NAME slabunified_test COMMAND slabunified_test)
 
 set(TARGETLIST lslab)
 
