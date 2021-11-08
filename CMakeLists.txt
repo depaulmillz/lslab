@@ -45,6 +45,13 @@ string(APPEND CMAKE_CUDA_FLAGS " -Wreorder")
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
+foreach(ARCH "${CMAKE_CUDA_ARCHITECTURES}")
+    if("${ARCH}" MATCHES "^(5.)$")
+        add_compile_options("-DDISABLE_PREFETCH")
+        break()
+    endif()
+endforeach()
+
 enable_testing()
 
 add_library(lslab INTERFACE)
