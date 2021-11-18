@@ -18,7 +18,6 @@ int main() {
     SlabUnified<unsigned long long, unsigned> s(size);
     auto b = new BatchBuffer<unsigned long long, unsigned>();
 
-    float time;
     s.setGPU();
     std::cerr << "Populating" << std::endl;
 

@@ -21,7 +21,7 @@ class LSlabConan(ConanFile):
 
     def configure(self):
         if self.options.cuda_arch == None:
-            self.options.cuda_arch = '70;75'
+            self.options.cuda_arch = '60;61;62;70;75'
 
     def _configure_cmake(self):
         cmake = CMake(self)
