@@ -12,6 +12,9 @@ public:
 
     }
 
+    LSLAB_HOST_DEVICE LSlab() : slabs(nullptr), number_of_buckets(0), ctx() {
+    }
+
     LSLAB_HOST_DEVICE ~LSlab() {} 
 
     LSLAB_DEVICE void get(K& key, V& value, unsigned hash, bool threadMask = false) {
