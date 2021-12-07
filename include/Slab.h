@@ -6,8 +6,8 @@
 #include <mutex>
 #include <thread>
 #include <type_traits>
+#include <LSlab.h>
 
-#include "gpuErrchk.cuh"
 #include "stdrequestHandler.cuh"
 
 #pragma once
@@ -16,7 +16,7 @@ namespace lslab {
 
 #define DEFAULT_SHOULD_USE_HOST true
 
-int getBlocks() noexcept {
+LSLAB_HOST int getBlocks() noexcept {
     cudaDeviceProp prop;
     prop.multiProcessorCount = 68;
     gpuAssert_slab(cudaGetDeviceProperties(&prop, 0), __FILE__, __LINE__, false);

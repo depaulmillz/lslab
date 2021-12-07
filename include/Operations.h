@@ -2,10 +2,9 @@
 #include <cassert>
 #include <cstdio>
 #include <cuda_runtime.h>
-#include <gpuErrchk.cuh>
-#include <gpumemory.cuh>
+#include <gpumemory.h>
 #include <iostream>
-#include "ImportantDefinitions.cuh"
+#include <ImportantDefinitions.h>
 
 #pragma once
 
@@ -178,7 +177,7 @@ struct SlabCtx {
  * @param slabs
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 LockSlab(const unsigned long long &next, const unsigned &src_bucket, const unsigned &laneId,
          volatile SlabData<K, V> **slabs) {
 
@@ -198,7 +197,7 @@ LockSlab(const unsigned long long &next, const unsigned &src_bucket, const unsig
  * @param slabs
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 SharedLockSlab(const unsigned long long &next, const unsigned &src_bucket, const unsigned &laneId,
                volatile SlabData<K, V> **slabs) {
 
@@ -224,7 +223,7 @@ SharedLockSlab(const unsigned long long &next, const unsigned &src_bucket, const
  * @param slabs
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 UnlockSlab(const unsigned long long &next, const unsigned &src_bucket, const unsigned &laneId,
            volatile SlabData<K, V> **slabs) {
 
@@ -243,7 +242,7 @@ UnlockSlab(const unsigned long long &next, const unsigned &src_bucket, const uns
  * @param slabs
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 SharedUnlockSlab(const unsigned long long &next, const unsigned &src_bucket, const unsigned &laneId,
                  volatile SlabData<K, V> **slabs) {
 
@@ -256,7 +255,7 @@ SharedUnlockSlab(const unsigned long long &next, const unsigned &src_bucket, con
 
 
 template<typename K, typename V>
-__forceinline__ __device__ typename SlabData<K, V>::KSub
+LSLAB_DEVICE typename SlabData<K, V>::KSub
 ReadSlabKey(const unsigned long long &next, const unsigned &src_bucket,
             const unsigned laneId, volatile SlabData<K, V> **slabs) {
     static_assert(sizeof(typename SlabData<K, V>::KSub) >= sizeof(void*), "Need to be able to substitute pointers for values");
@@ -264,7 +263,7 @@ ReadSlabKey(const unsigned long long &next, const unsigned &src_bucket,
 }
 
 template<typename K, typename V>
-__forceinline__ __device__ V
+LSLAB_DEVICE V
 ReadSlabValue(const unsigned long long &next, const unsigned &src_bucket,
               const unsigned laneId, volatile SlabData<K, V> **slabs) {
     return (next == BASE_SLAB ? slabs[src_bucket]->value[laneId] : ((SlabData<K, V> *) next)->value[laneId]);
@@ -272,7 +271,7 @@ ReadSlabValue(const unsigned long long &next, const unsigned &src_bucket,
 
 
 template<typename K, typename V>
-__forceinline__ __device__ volatile typename SlabData<K, V>::KSub *
+LSLAB_DEVICE volatile typename SlabData<K, V>::KSub *
 SlabAddressKey(const unsigned long long &next, const unsigned &src_bucket,
                const unsigned laneId, volatile SlabData<K, V> **slabs,
                unsigned num_of_buckets) {
@@ -280,7 +279,7 @@ SlabAddressKey(const unsigned long long &next, const unsigned &src_bucket,
 }
 
 template<typename K, typename V>
-__forceinline__ __device__ volatile V *
+LSLAB_DEVICE volatile V *
 SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
                  const unsigned laneId, volatile SlabData<K, V> **slabs,
                  unsigned num_of_buckets) {
@@ -289,7 +288,7 @@ SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
 
 // just doing parallel shared-nothing allocation
 template<typename K, typename V>
-__forceinline__ __device__ unsigned long long warp_allocate(WarpAllocCtx<K, V> ctx) {
+LSLAB_DEVICE unsigned long long warp_allocate(WarpAllocCtx<K, V> ctx) {
 
     const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
     const unsigned laneId = threadIdx.x & 0x1Fu;
@@ -321,7 +320,7 @@ __forceinline__ __device__ unsigned long long warp_allocate(WarpAllocCtx<K, V> c
 }
 
 template<typename K, typename V>
-__forceinline__ __device__ void deallocate(WarpAllocCtx<K, V> ctx, unsigned long long l) {
+LSLAB_DEVICE void deallocate(WarpAllocCtx<K, V> ctx, unsigned long long l) {
 
     const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
     const unsigned laneId = threadIdx.x & 0x1Fu;
@@ -340,7 +339,7 @@ __forceinline__ __device__ void deallocate(WarpAllocCtx<K, V> ctx, unsigned long
 
 // manually inlined
 template<typename K, typename V>
-__forceinline__ __device__ void warp_operation_search(bool &is_active, const K &myKey,
+LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
                                                       V &myValue, const unsigned &modhash,
                                                       volatile SlabData<K, V> **__restrict__ slabs,
                                                       unsigned num_of_buckets) {
@@ -411,7 +410,7 @@ __forceinline__ __device__ void warp_operation_search(bool &is_active, const K &
  * @param num_of_buckets
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 warp_operation_delete(bool &is_active, const K &myKey,
                       V &myValue, const unsigned &modhash,
                       volatile SlabData<K, V> **__restrict__ slabs, unsigned num_of_buckets) {
@@ -467,7 +466,7 @@ warp_operation_delete(bool &is_active, const K &myKey,
 }
 
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 warp_operation_replace(bool &is_active, const K &myKey,
                        V &myValue, const unsigned &modhash,
                        volatile SlabData<K, V> **__restrict__ slabs, unsigned num_of_buckets, WarpAllocCtx<K, V> ctx) {
@@ -593,7 +592,7 @@ warp_operation_replace(bool &is_active, const K &myKey,
  * @param num_of_buckets
  */
 template<typename K, typename V>
-__forceinline__ __device__ void
+LSLAB_DEVICE void
 warp_operation_delete_or_replace(bool &is_active, const K &myKey,
                       V &myValue, const unsigned &modhash,
                       volatile SlabData<K, V> **__restrict__ slabs, unsigned num_of_buckets, WarpAllocCtx<K, V> ctx, Operation op) {
@@ -709,7 +708,7 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
 
 
 template<typename K, typename V>
-SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, unsigned size, int gpuid = 0,
+LSLAB_HOST SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, unsigned size, int gpuid = 0,
                           cudaStream_t stream = cudaStreamDefault) {
 
     gpuErrchk(cudaSetDevice(gpuid));

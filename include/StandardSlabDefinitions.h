@@ -1,7 +1,7 @@
 //
 // Created by depaulsmiller on 8/28/20.
 //
-#include <Operations.cuh>
+#include <Operations.h>
 #include <functional>
 
 #pragma once
@@ -48,7 +48,7 @@ struct EMPTY<data_t *> {
 };
 
 template<>
-__forceinline__ __device__ unsigned compare(data_t *const &lhs, data_t *const &rhs) {
+LSLAB_DEVICE unsigned compare(data_t *const &lhs, data_t *const &rhs) {
 
     if (lhs == rhs) {
         return 0;
@@ -75,12 +75,12 @@ struct EMPTY<unsigned> {
 };
 
 template<>
-__forceinline__ __device__ unsigned compare(const unsigned &lhs, const unsigned &rhs) {
+LSLAB_DEVICE unsigned compare(const unsigned &lhs, const unsigned &rhs) {
     return lhs - rhs;
 }
 
 template<>
-__forceinline__ __device__ unsigned compare(const unsigned long long &lhs, const unsigned long long &rhs) {
+LSLAB_DEVICE unsigned compare(const unsigned long long &lhs, const unsigned long long &rhs) {
     return lhs - rhs;
 }
 

@@ -2,7 +2,8 @@
 // Created by depaulsmiller on 7/24/20.
 //
 
-#include "LSlab.cuh"
+#include "LSlab.h"
+#include "LSlabMap.h"
 
 #pragma once
 

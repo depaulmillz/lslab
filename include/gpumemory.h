@@ -1,4 +1,4 @@
-#include "gpuErrchk.cuh"
+#include "LSlab.h"
 #include <iostream>
 
 #pragma once
@@ -8,7 +8,7 @@ namespace lslab {
 template<typename T>
 struct GPUCPUMemory {
 
-    GPUCPUMemory() : host(nullptr), size(0), device(nullptr) {
+    LSLAB_HOST GPUCPUMemory() : host(nullptr), size(0), device(nullptr) {
     }
 
     GPUCPUMemory(size_t size) : GPUCPUMemory(new T[size], size) {}

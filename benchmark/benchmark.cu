@@ -2,9 +2,9 @@
 // Created by depaulsmiller on 9/3/20.
 //
 
-#include <StandardSlabDefinitions.cuh>
+#include <StandardSlabDefinitions.h>
 #include <vector>
-#include <Slab.cuh>
+#include <Slab.h>
 #include <cuda_profiler_api.h>
 
 using namespace lslab;

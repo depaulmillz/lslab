@@ -12,6 +12,6 @@ struct EMPTY {
 };
 
 template<typename T>
-__forceinline__ __host__ __device__ unsigned compare(const T &lhs, const T &rhs);
+LSLAB_HOST_DEVICE unsigned compare(const T &lhs, const T &rhs);
 
 }

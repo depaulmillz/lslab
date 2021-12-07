@@ -2,9 +2,9 @@
 // Created by depaulsmiller on 9/3/20.
 //
 
-#include <StandardSlabDefinitions.cuh>
+#include <StandardSlabDefinitions.h>
 #include <vector>
-#include <Slab.cuh>
+#include <Slab.h>
 #include <cuda_profiler_api.h>
 #include <unordered_map>
 
@@ -18,7 +18,7 @@ struct EMPTY<int *> {
 };
 
 template<>
-__forceinline__ __device__ unsigned compare(int *const &lhs, int *const &rhs) {
+LSLAB_DEVICE unsigned compare(int *const &lhs, int *const &rhs) {
     return lhs - rhs;
 }
 

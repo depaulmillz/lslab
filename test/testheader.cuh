@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  */
 
-#include <StandardSlabDefinitions.cuh>
+#include <StandardSlabDefinitions.h>
 #include <vector>
-#include <Slab.cuh>
+#include <Slab.h>
 
 #ifndef GPUHASHMAPS_TESTHEADER_CUH
 #define GPUHASHMAPS_TESTHEADER_CUH
