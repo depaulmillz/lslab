@@ -33,6 +33,10 @@ public:
         warp_operation_delete_or_replace(threadMask, key, value, hash, slabs, number_of_buckets, ctx, op);
     }
 
+    LSLAB_HOST_DEVICE unsigned size() {
+        return number_of_buckets;
+    }
+
 private:
     volatile SlabData<K, V> **slabs;
     unsigned number_of_buckets;
