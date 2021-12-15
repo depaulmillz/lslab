@@ -20,6 +20,8 @@
 
 #endif
 
+#ifndef __CUDACC_RTC__
+
 #define gpuErrchk(ans)                                                         \
   { lslab::gpuAssert_slab((ans), __FILE__, __LINE__); }
 namespace lslab {
@@ -35,3 +37,5 @@ LSLAB_HOST void gpuAssert_slab(cudaError_t code, const char *file, int line,
 }
 
 }
+
+#endif

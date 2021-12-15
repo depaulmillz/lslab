@@ -3,6 +3,7 @@
 //
 
 #include "LSlab.h"
+#include "Operations.h"
 #include "LSlabMap.h"
 
 #pragma once
