@@ -17,16 +17,20 @@ class LSlabConan(ConanFile):
     topic = ("data structure", "gpu programming", "hashmap", "hashtable")
     
     exports_sources = "CMakeLists.txt", "cmake/*", "benchmark/*", "include/*", "test/*", "LICENSE"
-    options = {"cuda_arch" : "ANY"}
+    options = {"cuda_arch" : "ANY", "cuda_compiler" : "ANY"}
 
     def configure(self):
         if self.options.cuda_arch == None:
             self.options.cuda_arch = '60;61;62;70;75'
+        if self.options.cuda_compiler == None:
+            self.options.cuda_compiler = "nvcc"
 
     def _configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["CMAKE_CUDA_ARCHITECTURES"] = str(self.options.cuda_arch)
+        cmake.definitions["CMAKE_CUDA_COMPILER"] = str(self.options.cuda_compiler)
         cmake.definitions["USING_CONAN"] = "ON"
+        cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = "ON"
         cmake.configure()
         return cmake
 

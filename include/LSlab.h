@@ -1,4 +1,3 @@
-#include <cuda.h>
 #include <cstdio>
 
 #pragma once

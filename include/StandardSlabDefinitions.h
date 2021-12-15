@@ -1,8 +1,8 @@
 //
 // Created by depaulsmiller on 8/28/20.
 //
-#include <Operations.h>
 #include <functional>
+#include "ImportantDefinitions.h"
 
 #pragma once
 
@@ -48,7 +48,7 @@ struct EMPTY<data_t *> {
 };
 
 template<>
-LSLAB_DEVICE unsigned compare(data_t *const &lhs, data_t *const &rhs) {
+LSLAB_HOST_DEVICE unsigned compare(const data_t * lhs, const data_t * rhs) {
 
     if (lhs == rhs) {
         return 0;
@@ -67,21 +67,6 @@ LSLAB_DEVICE unsigned compare(data_t *const &lhs, data_t *const &rhs) {
     }
 
     return 0;
-}
-
-template<>
-struct EMPTY<unsigned> {
-    static const unsigned value = 0;
-};
-
-template<>
-LSLAB_DEVICE unsigned compare(const unsigned &lhs, const unsigned &rhs) {
-    return lhs - rhs;
-}
-
-template<>
-LSLAB_DEVICE unsigned compare(const unsigned long long &lhs, const unsigned long long &rhs) {
-    return lhs - rhs;
 }
 
 }

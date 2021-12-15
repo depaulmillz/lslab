@@ -18,7 +18,7 @@ struct EMPTY<int *> {
 };
 
 template<>
-LSLAB_DEVICE unsigned compare(int *const &lhs, int *const &rhs) {
+LSLAB_HOST_DEVICE unsigned compare(const int* lhs, const int* rhs) {
     return lhs - rhs;
 }
 
