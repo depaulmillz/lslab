@@ -2,12 +2,12 @@ from conans import ConanFile, CMake
 
 class LSlabConan(ConanFile):
     name = "lslab"
-    version = "1.1"
+    version = "1.2"
     author = "dePaul Miller"
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"
     settings="os", "compiler", "build_type", "arch"
-    requires="unifiedmemorygroupallocation/1.0"
+    requires="unifiedmemorygroupallocation/1.1"
     build_requires="gtest/1.10.0"
     generators="cmake"
     description = """The LSlab GPU hashmap was designed in the paper

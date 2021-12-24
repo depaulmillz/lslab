@@ -1,11 +1,11 @@
 #include <cassert>
 #include <cstdio>
 #include <cuda_runtime.h>
-#include <gpumemory.h>
+#include "gpumemory.h"
 #include <iostream>
-#include <ImportantDefinitions.h>
-#include <OperationsDevice.h>
-#include <groupallocator>
+#include "ImportantDefinitions.h"
+#include "OperationsDevice.h"
+#include <GroupAllocator/groupallocator>
 
 #pragma once
 

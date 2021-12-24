@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <gtest/gtest.h>
-#include "testheader.cuh"
+#include "testheader.h"
 
 using namespace lslab;
 

@@ -9,17 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "SET CMAKE_BUILD_TYPE to Release")
 endif()
 
-#include(FetchContent)
 include(cmake/config.cmake)
-
-#FetchContent_Declare(
-#        UnifiedMemoryGroupAllocation
-#        GIT_REPOSITORY git@github.com:sss-lehigh/UnifiedMemoryGroupAllocation.git
-#        GIT_TAG main
-#)
-
-# CMake 3.14+
-#FetchContent_MakeAvailable(UnifiedMemoryGroupAllocation)
 
 check_cuda_version(11.0 11.5)
 set_consistent_standard(11)
@@ -45,6 +35,7 @@ string(APPEND CMAKE_CUDA_FLAGS " -Wreorder")
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>")
 
+# disable async calls on UM for Maxwell, which can break code
 foreach(ARCH "${CMAKE_CUDA_ARCHITECTURES}")
     if("${ARCH}" MATCHES "^(5.)$")
         add_compile_options("-DDISABLE_PREFETCH")

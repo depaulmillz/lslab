@@ -6,7 +6,7 @@
 #include <mutex>
 #include <thread>
 #include <type_traits>
-#include <LSlab.h>
+#include "LSlab.h"
 
 #include "stdrequestHandler.cuh"
 
