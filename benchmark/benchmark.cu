@@ -9,14 +9,17 @@
 
 using namespace lslab;
 
+const int BLOCKS = 128;
+const int THREADS_PER_BLOCK = 512;
+
 int main() {
 
     const int size = 1000000;
 
     std::hash<unsigned> hfn;
 
-    SlabUnified<unsigned long long, unsigned> s(size);
-    auto b = new BatchBuffer<unsigned long long, unsigned>();
+    SlabUnified<unsigned long long, unsigned, BLOCKS, THREADS_PER_BLOCK> s(size);
+    auto b = new BatchBuffer<unsigned long long, unsigned, BLOCKS, THREADS_PER_BLOCK>();
 
     s.setGPU();
     std::cerr << "Populating" << std::endl;
@@ -46,7 +49,7 @@ int main() {
         k = 0;
         int loopCond = size / 2 - inserted;
         for (; k < loopCond && k < THREADS_PER_BLOCK * BLOCKS; ++k) {
-            if (b->getBatchValues()[k] == EMPTY<unsigned>::value)
+            if (b->getBatchValues()[k] == 0)
                 inserted++;
         }
     }

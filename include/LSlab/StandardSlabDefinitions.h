@@ -2,7 +2,8 @@
 // Created by depaulsmiller on 8/28/20.
 //
 #include <functional>
-#include "ImportantDefinitions.h"
+#include <string>
+#include <LSlab/LSlab.h>
 
 #pragma once
 
@@ -32,6 +33,14 @@ struct data_t {
         return *this;
     }
 
+    LSLAB_HOST_DEVICE bool operator==(const data_t& other) const {
+        if (size != other.size) {
+            return false;
+        }
+
+        return memcmp(data, other.data, size) == 0;
+    }
+
 };
 
 /// For use with shared_ptr
@@ -42,32 +51,32 @@ class Data_tDeleter{
     }
 };
 
-template<>
-struct EMPTY<data_t *> {
-    static constexpr data_t *value = nullptr;
-};
+//template<>
+//struct EMPTY<data_t *> {
+//    static constexpr data_t *value = nullptr;
+//};
 
-template<>
-LSLAB_HOST_DEVICE unsigned compare(const data_t * lhs, const data_t * rhs) {
-
-    if (lhs == rhs) {
-        return 0;
-    } else if (lhs == nullptr || rhs == nullptr) {
-        return 1;
-    }
-
-    if (lhs->size != rhs->size) {
-        return (unsigned) (lhs->size - rhs->size);
-    }
-
-    for (size_t i = 0; i < lhs->size; i++) {
-        unsigned sub = lhs->data[i] - rhs->data[i];
-        if (sub != 0)
-            return sub;
-    }
-
-    return 0;
-}
+//template<>
+//LSLAB_HOST_DEVICE unsigned compare(const data_t * lhs, const data_t * rhs) {
+//
+//    if (lhs == rhs) {
+//        return 0;
+//    } else if (lhs == nullptr || rhs == nullptr) {
+//        return 1;
+//    }
+//
+//    if (lhs->size != rhs->size) {
+//        return (unsigned) (lhs->size - rhs->size);
+//    }
+//
+//    for (size_t i = 0; i < lhs->size; i++) {
+//        unsigned sub = lhs->data[i] - rhs->data[i];
+//        if (sub != 0)
+//            return sub;
+//    }
+//
+//    return 0;
+//}
 
 }
 

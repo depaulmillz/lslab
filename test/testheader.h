@@ -23,17 +23,3 @@
 #include <LSlab/StandardSlabDefinitions.h>
 #include <vector>
 #include <LSlab/Slab.h>
-
-#ifndef GPUHASHMAPS_TESTHEADER_CUH
-#define GPUHASHMAPS_TESTHEADER_CUH
-
-namespace lslab {
-
-template<>
-struct EMPTY<int *> {
-    static constexpr int *value = nullptr;
-};
-
-}
-
-#endif //GPUHASHMAPS_TESTHEADER_CUH

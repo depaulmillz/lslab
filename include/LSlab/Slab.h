@@ -23,8 +23,8 @@ LSLAB_HOST int getBlocks() noexcept {
     return 2 * prop.multiProcessorCount;
 }
 
-const int BLOCKS = getBlocks();
-const int THREADS_PER_BLOCK = 512;
+//const int BLOCKS = getBlocks();
+//const int THREADS_PER_BLOCK = 512;
 
 template<typename T>
 struct UniqueHostDevicePtr {
@@ -128,15 +128,15 @@ struct AddExtra<K, V, true> {
     UniqueHostDevicePtr<unsigned> hashValues;
 };
 
-template<typename K, typename V, bool UseHost = DEFAULT_SHOULD_USE_HOST>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost = DEFAULT_SHOULD_USE_HOST>
 class SlabUnified;
 
-template<typename K, typename V, bool UseHost = DEFAULT_SHOULD_USE_HOST>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost = DEFAULT_SHOULD_USE_HOST>
 class BatchBuffer;
 
-template<typename K, typename V, bool UseHost = false>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost = false>
 struct AllocateBuffers {
-    inline void operator()(BatchBuffer<K, V, UseHost> *b) {
+    inline void operator()(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *b) {
         std::cerr << "Allocating Buffers\n";
         b->bufferGAlloc->allocate(&b->batchKeys,
                                   BLOCKS * THREADS_PER_BLOCK * sizeof(K), false);
@@ -154,9 +154,9 @@ struct AllocateBuffers {
     }
 };
 
-template<typename K, typename V>
-struct AllocateBuffers<K, V, true> {
-    inline void operator()(BatchBuffer<K, V, true> *b) {
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK>
+struct AllocateBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, true> {
+    inline void operator()(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, true> *b) {
         std::cerr << "Allocating Buffers On Host Device\n";
         b->newMemory = std::move(AddExtra<K, V, true>(BLOCKS * THREADS_PER_BLOCK));
         b->batchKeys = b->newMemory.batchKeys.getHost();
@@ -172,26 +172,26 @@ struct AllocateBuffers<K, V, true> {
     }
 };
 
-template<typename K, typename V, bool UseHost = false>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost = false>
 struct MoveBuffers {
-    static inline void toCPU(BatchBuffer<K, V, false> *b, cudaStream_t stream) {
+    static inline void toCPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, false> *b, cudaStream_t stream) {
         b->bufferGAlloc->moveToDevice(cudaCpuDeviceId, stream);
 
     }
 
-    static inline void toGPU(BatchBuffer<K, V, false> *b, cudaStream_t stream) {
+    static inline void toGPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, false> *b, cudaStream_t stream) {
         b->bufferGAlloc->moveToDevice(b->_gpu, stream);
     }
 
 };
 
-template<typename K, typename V>
-struct MoveBuffers<K, V, true> {
-    static inline void toCPU(BatchBuffer<K, V, true> *b, cudaStream_t stream) {
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK>
+struct MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, true> {
+    static inline void toCPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, true> *b, cudaStream_t stream) {
         b->newMemory.batchValues.moveToCPUAsync(stream);
     }
 
-    static inline void toGPU(BatchBuffer<K, V, true> *b, cudaStream_t stream) {
+    static inline void toGPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, true> *b, cudaStream_t stream) {
         b->newMemory.batchKeys.moveToGPUAsync(stream);
         b->newMemory.batchValues.moveToGPUAsync(stream);
         b->newMemory.batchRequests.moveToGPUAsync(stream);
@@ -215,7 +215,7 @@ protected:
     int position{};
 };
 
-template<typename K, typename V, bool UseHost>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost>
 class BatchBuffer {
 public:
     BatchBuffer() {
@@ -256,16 +256,16 @@ private:
     groupallocator::GroupAllocator *bufferGAlloc;
 
     AddExtra<K, V, UseHost> newMemory;
-    AllocateBuffers<K, V, UseHost> allocateBuffersFn;
+    AllocateBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> allocateBuffersFn;
 
-    friend class AllocateBuffers<K, V, UseHost>;
+    friend class AllocateBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>;
 
-    friend class MoveBuffers<K, V, UseHost>;
-
-    friend class SlabUnified<K, V, UseHost>;
+    friend class MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>;
+    
+    friend class SlabUnified<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>;
 };
 
-template<typename K, typename V, bool UseHost>
+template<typename K, typename V, int BLOCKS, int THREADS_PER_BLOCK, bool UseHost>
 class SlabUnified : public Slab<K, V> {
 public:
     SlabUnified(int size) : SlabUnified(size, 0) {}
@@ -286,7 +286,7 @@ public:
         this->mapSize = size;
     }
 
-    SlabUnified(SlabUnified<K, V> &&other) noexcept {
+    SlabUnified(SlabUnified<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> &&other) noexcept {
         gpuErrchk(cudaSetDevice(other._gpu));
 
         this->_stream = other._stream;
@@ -322,7 +322,7 @@ public:
         delete allocGAlloc;
     }
 
-    SlabUnified<K, V> &operator=(SlabUnified<K, V> &&other) noexcept {
+    SlabUnified<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> &operator=(SlabUnified<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> &&other) noexcept {
         gpuErrchk(cudaSetDevice(other._gpu));
 
         slabGAlloc = other.slabGAlloc;
@@ -352,7 +352,7 @@ public:
      * @param requests
      * @param hashes
      */
-    void batch(BatchBuffer<K, V, UseHost> *buffer) {
+    void batch(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer) {
         batch(buffer, BLOCKS, THREADS_PER_BLOCK, cudaStreamDefault);
     }
 
@@ -367,12 +367,12 @@ public:
      * @param requests
      * @param hashes
      */
-    void batch(BatchBuffer<K, V, UseHost> *buffer, unsigned blocks,
+    void batch(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, unsigned blocks,
                unsigned threads_per_block, cudaStream_t stream) {
 
         gpuErrchk(cudaSetDevice(this->_gpu));
 
-        MoveBuffers<K, V, UseHost>::toGPU(buffer, stream);
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toGPU(buffer, stream);
         gpuErrchk(cudaStreamSynchronize(stream));
 
         //std::cerr << "Moved to device " << std::endl;
@@ -386,7 +386,7 @@ public:
 
         //std::cerr << "Request handler done " << std::endl;
 
-        MoveBuffers<K, V, UseHost>::toCPU(buffer, stream);
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toCPU(buffer, stream);
         gpuErrchk(cudaStreamSynchronize(stream));
         //std::cerr << "Moved to cpu " << std::endl;
     }
@@ -403,7 +403,7 @@ public:
      * @param hashes
      * @param time
      */
-    void batch(BatchBuffer<K, V, UseHost> *buffer, float &time) {
+    void batch(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, float &time) {
         batch(buffer, time, BLOCKS, THREADS_PER_BLOCK, cudaStreamDefault);
     }
 
@@ -420,7 +420,7 @@ public:
      * @param hashes
      * @param time
      */
-    void batch(BatchBuffer<K, V, UseHost> *buffer, float &time, unsigned blocks,
+    void batch(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, float &time, unsigned blocks,
                unsigned threads_per_block, cudaStream_t stream) {
 
         gpuErrchk(cudaSetDevice(this->_gpu));
@@ -431,7 +431,7 @@ public:
         gpuErrchk(cudaEventCreate(&startEvent));
         gpuErrchk(cudaEventCreate(&endEvent));
 
-        MoveBuffers<K, V, UseHost>::toGPU(buffer, stream);
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toGPU(buffer, stream);
         gpuErrchk(cudaStreamSynchronize(stream));
 
         gpuErrchk(cudaEventRecord(startEvent, stream));
@@ -449,7 +449,7 @@ public:
 
         gpuErrchk(cudaEventSynchronize(endEvent));
 
-        MoveBuffers<K, V, UseHost>::toCPU(buffer, stream);
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toCPU(buffer, stream);
 
         gpuErrchk(cudaEventElapsedTime(&time, startEvent, endEvent));
 
@@ -470,8 +470,8 @@ public:
      * @param buffer
      * @param stream
      */
-    inline void moveBufferToGPU(BatchBuffer<K, V, UseHost> *buffer, cudaStream_t stream) {
-        MoveBuffers<K, V, UseHost>::toGPU(buffer, stream);
+    inline void moveBufferToGPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, cudaStream_t stream) {
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toGPU(buffer, stream);
     }
 
     /**
@@ -479,8 +479,8 @@ public:
      * @param buffer
      * @param stream
      */
-    inline void moveBufferToCPU(BatchBuffer<K, V, UseHost> *buffer, cudaStream_t stream) {
-        MoveBuffers<K, V, UseHost>::toCPU(buffer, stream);
+    inline void moveBufferToCPU(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, cudaStream_t stream) {
+        MoveBuffers<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost>::toCPU(buffer, stream);
     }
 
     /**
@@ -493,7 +493,7 @@ public:
      * @param stream
      */
     void
-    diy_batch(BatchBuffer<K, V, UseHost> *buffer, unsigned blocks, unsigned threads_per_block, cudaStream_t stream) {
+    diy_batch(BatchBuffer<K, V, BLOCKS, THREADS_PER_BLOCK, UseHost> *buffer, unsigned blocks, unsigned threads_per_block, cudaStream_t stream) {
         requestHandler<K, V><<<blocks, threads_per_block, 0, stream>>>(
                 this->slab->slabs, this->slab->num_of_buckets, buffer->batchKeys_k, buffer->batchValues_k,
                 buffer->hashValues_k,

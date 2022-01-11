@@ -10,26 +10,15 @@
 
 using namespace lslab;
 
-namespace lslab {
-
-template<>
-struct EMPTY<int *> {
-    static constexpr int *value = nullptr;
-};
-
-template<>
-LSLAB_HOST_DEVICE unsigned compare(const int* lhs, const int* rhs) {
-    return lhs - rhs;
-}
-
-}
+const int BLOCKS = 128;
+const int THREADS_PER_BLOCK = 512;
 
 int main() {
 
     const int size = 1000;
     std::hash<unsigned> hfn;
-    SlabUnified<unsigned, int *> s(size);
-    auto b = new BatchBuffer<unsigned, int *>();
+    SlabUnified<unsigned, int *, BLOCKS, THREADS_PER_BLOCK> s(size);
+    auto b = new BatchBuffer<unsigned, int *, BLOCKS, THREADS_PER_BLOCK>();
 
     s.setGPU();
 
@@ -55,7 +44,7 @@ int main() {
         gpuErrchk(cudaStreamSynchronize(0x0));
         j = 0;
         for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
-            if (b->getBatchRequests()[j] == REQUEST_INSERT && b->getBatchValues()[j] != EMPTY<int *>::value) {
+            if (b->getBatchRequests()[j] == REQUEST_INSERT && b->getBatchValues()[j] != nullptr) {
                 delete[] b->getBatchValues()[j];
             }
         }
@@ -88,7 +77,7 @@ int main() {
 
             j = 0;
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
-                if (b->getBatchRequests()[j] == REQUEST_INSERT && b->getBatchValues()[j] != EMPTY<int *>::value) {
+                if (b->getBatchRequests()[j] == REQUEST_INSERT && b->getBatchValues()[j] != nullptr) {
                     delete[] b->getBatchValues()[j];
                 }
             }

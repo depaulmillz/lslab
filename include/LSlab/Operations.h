@@ -3,7 +3,6 @@
 #include <cuda_runtime.h>
 #include "gpumemory.h"
 #include <iostream>
-#include "ImportantDefinitions.h"
 #include "OperationsDevice.h"
 #include <GroupAllocator/groupallocator>
 
@@ -33,8 +32,8 @@ setupWarpAllocCtxGroup(groupallocator::GroupAllocator &gAlloc, int threadsPerBlo
                 //gAlloc.allocate(&(actx.blocks[i].memblocks[j].slab[k].keyValue), sizeof(unsigned long long) * 32, false);
                 actx.blocks[i].memblocks[j].slab[k].ilock = 0;
                 for (int w = 0; w < 32; w++) {
-                    actx.blocks[i].memblocks[j].slab[k].key[w] = EMPTY<K>::value;
-                    actx.blocks[i].memblocks[j].slab[k].value[j] = EMPTY<V>::value;
+                    actx.blocks[i].memblocks[j].slab[k].key[w] = K{};
+                    actx.blocks[i].memblocks[j].slab[k].value[j] = V{};
                 }
             }
         }
@@ -72,7 +71,7 @@ LSLAB_HOST SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, uns
         memset((void *) (sctx->slabs[i]), 0, sizeof(SlabData<K, V>));
 
         for (int j = 0; j < 31; j++) {
-            sctx->slabs[i]->key[j] = EMPTY<K>::value;// EMPTY_PAIR;
+            const_cast<typename SlabData<K, V>::KSub *>(sctx->slabs[i]->key)[j] = K{};// EMPTY_PAIR;
         }
 
         void **ptrs = (void **) sctx->slabs[i]->key;
@@ -80,7 +79,7 @@ LSLAB_HOST SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, uns
         ptrs[31] = nullptr;// EMPTY_POINTER;
 
         for (int j = 0; j < 32; j++) {
-            sctx->slabs[i]->value[j] = EMPTY<V>::value;
+            const_cast<V&>(sctx->slabs[i]->value[j]) = V{};
         }
 
     }

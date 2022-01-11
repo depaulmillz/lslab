@@ -1,6 +1,7 @@
+#include "LSlab.h"
 #include <cstdio>
 #include <cuda_runtime.h>
-#include "ImportantDefinitions.h"
+#include <cub/util_ptx.cuh>
 
 #pragma once
 
@@ -219,14 +220,15 @@ LSLAB_DEVICE typename SlabData<K, V>::KSub
 ReadSlabKey(const unsigned long long &next, const unsigned &src_bucket,
             const unsigned laneId, volatile SlabData<K, V> **slabs) {
     static_assert(sizeof(typename SlabData<K, V>::KSub) >= sizeof(void*), "Need to be able to substitute pointers for values");
-    return next == BASE_SLAB ? slabs[src_bucket]->key[laneId] : ((SlabData<K, V> *) next)->key[laneId];
+    return next == BASE_SLAB ? const_cast<typename SlabData<K, V>::KSub&>(slabs[src_bucket]->key[laneId]) : 
+        const_cast<typename SlabData<K, V>::KSub&>(reinterpret_cast<SlabData<K, V> *>(next)->key[laneId]);
 }
 
 template<typename K, typename V>
 LSLAB_DEVICE V
 ReadSlabValue(const unsigned long long &next, const unsigned &src_bucket,
               const unsigned laneId, volatile SlabData<K, V> **slabs) {
-    return (next == BASE_SLAB ? slabs[src_bucket]->value[laneId] : ((SlabData<K, V> *) next)->value[laneId]);
+    return (next == BASE_SLAB ? const_cast<SlabData<K, V>*>(slabs[src_bucket])->value[laneId] : reinterpret_cast<SlabData<K, V> *>(next)->value[laneId]);
 }
 
 
@@ -244,6 +246,26 @@ SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
                  const unsigned laneId, volatile SlabData<K, V> **slabs,
                  unsigned num_of_buckets) {
     return (next == BASE_SLAB ? slabs[src_bucket]->value : ((SlabData<K, V> *) next)->value) + laneId;
+}
+
+template<typename T>
+LSLAB_DEVICE T shfl(unsigned mask, T val, int offset) {
+    return cub::ShuffleIndex<32>(val, offset, mask);
+}
+
+template<>
+LSLAB_DEVICE unsigned shfl(unsigned mask, unsigned val, int offset) {
+    return __shfl_sync(mask, val, offset);
+}
+
+template<>
+LSLAB_DEVICE int shfl(unsigned mask, int val, int offset) {
+    return __shfl_sync(mask, val, offset);
+}
+
+template<>
+LSLAB_DEVICE unsigned long long shfl(unsigned mask, unsigned long long val, int offset) {
+    return __shfl_sync(mask, val, offset);
 }
 
 // just doing parallel shared-nothing allocation
@@ -274,7 +296,7 @@ LSLAB_DEVICE unsigned long long warp_allocate(WarpAllocCtx<K, V> ctx) {
         bitmap = bitmap ^ (1u << (unsigned) index);
         blocks[laneId].bitmap = bitmap;
     }
-    location = __shfl_sync(~0u, location, ballotThread);
+    location = shfl(~0u, location, ballotThread);
 
     return location;
 }
@@ -296,7 +318,6 @@ LSLAB_DEVICE void deallocate(WarpAllocCtx<K, V> ctx, unsigned long long l) {
     }
 }
 
-
 // manually inlined
 template<typename K, typename V>
 LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
@@ -307,35 +328,35 @@ LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
     unsigned long long next = BASE_SLAB;
     unsigned work_queue = __ballot_sync(~0u, is_active);
 
-    const auto threadKey = (unsigned long long) myKey;
+    const K threadKey = myKey;
     unsigned last_work_queue = 0;
 
     while (work_queue != 0) {
 
         next = (work_queue != last_work_queue) ? (BASE_SLAB) : next;
 
-        unsigned src_lane = __ffs((int) work_queue) - 1;
-        unsigned long long src_key = __shfl_sync(~0u, threadKey, (int) src_lane);
-        unsigned src_bucket = __shfl_sync(~0u, modhash, (int) src_lane);
+        unsigned src_lane = __ffs(work_queue) - 1;
+        K src_key = shfl(~0u, threadKey, src_lane);
+        unsigned src_bucket = shfl(~0u, modhash, src_lane);
         if(work_queue != last_work_queue){
             SharedLockSlab(BASE_SLAB, src_bucket, laneId, slabs);
         }
-        unsigned long long read_key =
-                (unsigned long long) ReadSlabKey(next, src_bucket, laneId, slabs);
+        auto read_key = ReadSlabKey(next, src_bucket, laneId, slabs);
 
-        auto masked_ballot = (unsigned) (__ballot_sync(~0u, compare((K) read_key, (K) src_key) == 0) & VALID_KEY_MASK);
+        auto masked_ballot = __ballot_sync(~0u, read_key == src_key) & VALID_KEY_MASK;
 
         if (masked_ballot != 0) {
             V read_value = ReadSlabValue(next, src_bucket, laneId, slabs);
 
-            auto found_lane = (unsigned) (__ffs(masked_ballot) - 1);
-            auto found_value = (V) __shfl_sync(~0u, (unsigned long long) read_value, found_lane);
+            unsigned found_lane = __ffs(masked_ballot) - 1;
+            auto found_value = shfl(~0u, read_value, found_lane);
             if (laneId == src_lane) {
                 myValue = found_value;
                 is_active = false;
             }
         } else {
-            unsigned long long next_ptr = __shfl_sync(~0u, (unsigned long long) read_key, ADDRESS_LANE - 1);
+            static_assert(sizeof(read_key) >= sizeof(void*), "Need read key to be bigger than the size of a pointer");
+            unsigned long long next_ptr = shfl(~0u, reinterpret_cast<unsigned long long&>(read_key), ADDRESS_LANE - 1);
             if (next_ptr == 0) {
                 if (laneId == src_lane) {
                     myValue = SEARCH_NOT_FOUND;
@@ -381,34 +402,34 @@ warp_operation_delete(bool &is_active, const K &myKey,
 
     while (work_queue != 0) {
         next = (work_queue != last_work_queue) ? (BASE_SLAB) : next;
-        auto src_lane = (unsigned) (__ffs((int) work_queue) - 1);
-        auto src_key = (K) __shfl_sync(~0u, (unsigned long long) myKey, src_lane);
-        unsigned src_bucket = __shfl_sync(~0u, modhash, (int) src_lane);
+        unsigned src_lane = __ffs(work_queue) - 1;
+        auto src_key = shfl(~0u, myKey, src_lane);
+        unsigned src_bucket = shfl(~0u, modhash, src_lane);
         
         if(work_queue != last_work_queue){
             LockSlab(BASE_SLAB, src_bucket, laneId, slabs);
         }
 
-        K read_key =
-                ReadSlabKey(next, src_bucket, laneId, slabs);
+        K read_key = ReadSlabKey(next, src_bucket, laneId, slabs);
 
-        auto masked_ballot = (unsigned) (__ballot_sync(~0u, compare(read_key, src_key) == 0) & VALID_KEY_MASK);
+        auto masked_ballot = __ballot_sync(~0u, read_key == src_key) & VALID_KEY_MASK;
 
         if (masked_ballot != 0) {
 
             if (src_lane == laneId) {
                 unsigned dest_lane = __ffs(masked_ballot) - 1;
-                *(SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets)) = EMPTY<K>::value;
+                *const_cast<K*>(SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets)) = K{};
                 is_active = false;
                 myValue = ReadSlabValue(next, src_bucket, dest_lane, slabs);
                 //success = true;
                 __threadfence();
             }
         } else {
-            unsigned long long next_ptr = __shfl_sync(~0u, (unsigned long long) read_key, ADDRESS_LANE - 1);
+            static_assert(sizeof(read_key) >= sizeof(void*), "Need read key to be bigger than the size of a pointer");
+            unsigned long long next_ptr = shfl(~0u, reinterpret_cast<unsigned long long&>(read_key), ADDRESS_LANE - 1);
             if (next_ptr == 0) {
                 is_active = false;
-                myValue = EMPTY<V>::value;
+                myValue = V{};
                 //success = false;
             } else {
                 __syncwarp();
@@ -440,78 +461,63 @@ warp_operation_replace(bool &is_active, const K &myKey,
     unsigned long long empty_next = BASE_SLAB;
 
     while (work_queue != 0) {
-        //bool unlocked = false;
-
+        
         next = (work_queue != last_work_queue) ? (BASE_SLAB) : next;
 
-        //if (laneId == 0)
-        //    printf("%ld %d %d\n", next, blockIdx.x, threadIdx.x);
-        auto src_lane = (unsigned) (__ffs((int) work_queue) - 1);
-        auto src_key = (K) __shfl_sync(~0u, (unsigned long long) myKey, src_lane);
-        unsigned src_bucket = __shfl_sync(~0u, modhash, (int) src_lane);
+        auto src_lane = __ffs( work_queue) - 1;
+        auto src_key = shfl(~0u, myKey, src_lane);
+        unsigned src_bucket = shfl(~0u, modhash, src_lane);
 
         if(work_queue != last_work_queue){
             foundEmptyNext = false;
             LockSlab(BASE_SLAB, src_bucket, laneId, slabs);
         }
 
-        // if (laneId == 0)
-        //  printf("src_lane %d from %d: %d -> %d\n", src_lane, work_queue, src_key, src_bucket);
+        K read_key = ReadSlabKey(next, src_bucket, laneId, slabs);
 
-        //if(laneId == 0){
-        //    printf("Locked src_bucket %d\n", src_bucket);
-        //}
+        bool to_share = read_key == src_key;
+        auto masked_ballot = __ballot_sync(~0u, to_share) & VALID_KEY_MASK;
 
-        K read_key =
-                ReadSlabKey(next, src_bucket, laneId, slabs);
-
-
-        bool to_share = (compare(read_key, src_key) == 0);
-        int masked_ballot = (int) (__ballot_sync(~0u, to_share) & VALID_KEY_MASK);
-
-        if(!foundEmptyNext && read_key == EMPTY<K>::value){
+        if(!foundEmptyNext && read_key == K{}){
             foundEmptyNext = true;
             empty_next = next;
         }
 
         if (masked_ballot != 0) {
             if (src_lane == laneId) {
-                unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
-                volatile K *addrKey =
-                        (volatile K*) SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets);
-                volatile V *addrValue =
-                        SlabAddressValue(next, src_bucket, dest_lane, slabs, num_of_buckets);
-                V tmpValue = EMPTY<V>::value;
-                if (*addrKey == EMPTY<K>::value) {
-                    *addrKey = myKey;
+                unsigned dest_lane = __ffs(masked_ballot) - 1;
+                volatile K *addrKey = SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                volatile V *addrValue = SlabAddressValue(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                V tmpValue = V{};
+                if (*const_cast<K*>(addrKey) == K{}) {
+                    *const_cast<K*>(addrKey) = myKey;
                 } else {
-                    tmpValue = *addrValue;
+                    tmpValue = *const_cast<V*>(addrValue);
                 }
-                *addrValue = myValue;
+                *const_cast<V*>(addrValue) = myValue;
                 myValue = tmpValue;
                 __threadfence_system();
                 is_active = false;
             }
         } else {
-            unsigned long long next_ptr = __shfl_sync(~0u, (unsigned long long) read_key, ADDRESS_LANE - 1);
+            static_assert(sizeof(read_key) >= sizeof(void*), "Need read key to be bigger than the size of a pointer");
+            unsigned long long next_ptr = shfl(~0u, reinterpret_cast<unsigned long long&>(read_key), ADDRESS_LANE - 1);
             if (next_ptr == 0) {
                 __threadfence_system();
                 masked_ballot = (int) (__ballot_sync(~0u, foundEmptyNext) & VALID_KEY_MASK);
                 if (masked_ballot != 0) {
-                    unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
-                    unsigned new_empty_next = __shfl_sync(~0u, empty_next, (int) dest_lane);
+                    unsigned dest_lane = __ffs(masked_ballot) - 1;
+                    unsigned new_empty_next = shfl(~0u, empty_next, dest_lane);
                     if (src_lane == laneId) {
-                        volatile K *addrKey =
-                                (volatile K*) SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
-                        volatile V *addrValue =
-                                SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
-                        V tmpValue = EMPTY<V>::value;
-                        if (*addrKey == EMPTY<K>::value) {
-                            *addrKey = src_key;
+                        volatile K *addrKey = SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                        volatile V *addrValue = SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                        V tmpValue = V{};
+                        if (*const_cast<K*>(addrKey) == K{}) {
+                            *const_cast<K*>(addrKey) = src_key;
                         } else {
-                            tmpValue = *addrValue;
+                            tmpValue = *const_cast<V*>(addrValue);
                         }
-                        *addrValue = myValue;
+                        *const_cast<V*>(addrValue) = myValue;
                         myValue = tmpValue;
                         __threadfence_system();
                         is_active = false;
@@ -519,9 +525,9 @@ warp_operation_replace(bool &is_active, const K &myKey,
                 } else {
                     unsigned long long new_slab_ptr = warp_allocate(ctx);
                     if (laneId == ADDRESS_LANE - 1) {
-                        auto *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1,
+                        volatile K *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1,
                                                                                slabs, num_of_buckets);
-                        *((unsigned long long*)slabAddr) = new_slab_ptr;
+                        *reinterpret_cast<volatile unsigned long long*>(slabAddr) = new_slab_ptr;
                         __threadfence_system();
                     }
                     next = new_slab_ptr;
@@ -556,6 +562,9 @@ LSLAB_DEVICE void
 warp_operation_delete_or_replace(bool &is_active, const K &myKey,
                       V &myValue, const unsigned &modhash,
                       volatile SlabData<K, V> **__restrict__ slabs, unsigned num_of_buckets, WarpAllocCtx<K, V> ctx, Operation op) {
+
+    using KSub = typename SlabData<K, V>::KSub;
+    
     const unsigned laneId = threadIdx.x & 0x1Fu;
     unsigned long long next = BASE_SLAB;
     unsigned work_queue = __ballot_sync(~0u, is_active);
@@ -565,21 +574,20 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
 
     while (work_queue != 0) {
         next = (work_queue != last_work_queue) ? (BASE_SLAB) : next;
-        auto src_lane = (unsigned) (__ffs((int) work_queue) - 1);
-        auto src_key = (K) __shfl_sync(~0u, (unsigned long long) myKey, src_lane);
-        unsigned src_bucket = __shfl_sync(~0u, modhash, (int) src_lane);
+        auto src_lane = __ffs(work_queue) - 1;
+        auto src_key = shfl(~0u, myKey, src_lane);
+        unsigned src_bucket = shfl(~0u, modhash, (int) src_lane);
         
         if(work_queue != last_work_queue){
             foundEmptyNext = false;
             LockSlab(BASE_SLAB, src_bucket, laneId, slabs);
         }
 
-        K read_key =
-                ReadSlabKey(next, src_bucket, laneId, slabs);
+        KSub read_key = ReadSlabKey(next, src_bucket, laneId, slabs);
 
-        auto masked_ballot = (unsigned) (__ballot_sync(~0u, compare(read_key, src_key) == 0) & VALID_KEY_MASK);
+        auto masked_ballot = __ballot_sync(~0u, read_key == src_key) & VALID_KEY_MASK;
         
-        if(!foundEmptyNext && read_key == EMPTY<K>::value){
+        if(!foundEmptyNext && read_key == K{}){
             foundEmptyNext = true;
             empty_next = next;
         }
@@ -587,25 +595,24 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
         if (masked_ballot != 0) {
 
             if (src_lane == laneId) {
-                unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
+                unsigned dest_lane = __ffs(masked_ballot) - 1;
 
                 if(op == REMOVE) {
-                    *(SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets)) = EMPTY<K>::value;
+                    *const_cast<KSub *>(SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets)) = K{};
                     is_active = false;
                     myValue = ReadSlabValue(next, src_bucket, dest_lane, slabs);
                     //success = true;
                 } else {
-                    volatile K *addrKey =
-                            (volatile K*) SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets);
-                    volatile V *addrValue =
-                            SlabAddressValue(next, src_bucket, dest_lane, slabs, num_of_buckets);
-                    V tmpValue = EMPTY<V>::value;
-                    if (*addrKey == EMPTY<K>::value) {
-                        *addrKey = myKey;
+                    volatile KSub *addrKey = SlabAddressKey(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                    auto *addrValue = SlabAddressValue(next, src_bucket, dest_lane, slabs, num_of_buckets);
+                    V tmpValue = V{};
+                    K addrKeyDeref = const_cast<KSub&>(*addrKey);
+                    if (addrKeyDeref == K{}) {
+                        *const_cast<KSub*>(addrKey) = myKey;
                     } else {
-                        tmpValue = *addrValue;
+                        tmpValue = *const_cast<V*>(addrValue);
                     }
-                    *addrValue = myValue;
+                    *const_cast<V*>(addrValue) = myValue;
                     myValue = tmpValue;
                     is_active = false;
                 }
@@ -613,29 +620,29 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
             }
 
         } else {
-            unsigned long long next_ptr = __shfl_sync(~0u, (unsigned long long) read_key, ADDRESS_LANE - 1);
+            static_assert(sizeof(read_key) >= sizeof(void*), "Need read key to be bigger than the size of a pointer");
+            unsigned long long next_ptr = shfl(~0u, reinterpret_cast<unsigned long long&>(read_key), ADDRESS_LANE - 1);
             if (next_ptr == 0) {
                 if(op == REMOVE) {
                     is_active = false;
-                    myValue = EMPTY<V>::value;
+                    myValue = V{};
                 } else {
                     __threadfence_system();
                     masked_ballot = (int) (__ballot_sync(~0u, foundEmptyNext) & VALID_KEY_MASK);
                     if (masked_ballot != 0) {
-                        unsigned dest_lane = (unsigned) __ffs(masked_ballot) - 1;
-                        unsigned new_empty_next = __shfl_sync(~0u, empty_next, (int) dest_lane);
+                        unsigned dest_lane = __ffs(masked_ballot) - 1;
+                        unsigned new_empty_next = shfl(~0u, empty_next, dest_lane);
                         if (src_lane == laneId) {
-                            volatile K *addrKey =
-                                    (volatile K*) SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
-                            volatile V *addrValue =
-                                    SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
-                            V tmpValue = EMPTY<V>::value;
-                            if (*addrKey == EMPTY<K>::value) {
-                                *addrKey = src_key;
+                            auto addrKey = SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                            auto addrValue = SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
+                            V tmpValue = V{};
+                            K addrKeyDeref = const_cast<KSub&>(*addrKey);
+                            if (addrKeyDeref == K{}) {
+                                *const_cast<KSub*>(addrKey) = src_key;
                             } else {
-                                tmpValue = *addrValue;
+                                tmpValue = *const_cast<V*>(addrValue);
                             }
-                            *addrValue = myValue;
+                            *const_cast<V*>(addrValue) = myValue;
                             myValue = tmpValue;
                             __threadfence_system();
                             is_active = false;
@@ -643,9 +650,8 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
                     } else {
                         unsigned long long new_slab_ptr = warp_allocate(ctx);
                         if (laneId == ADDRESS_LANE - 1) {
-                            auto *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1,
-                                                                                   slabs, num_of_buckets);
-                            *((unsigned long long*)slabAddr) = new_slab_ptr;
+                            auto *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1, slabs, num_of_buckets);
+                            *reinterpret_cast<volatile unsigned long long*>(slabAddr) = new_slab_ptr;
                             __threadfence_system();
                         }
                         next = new_slab_ptr;
