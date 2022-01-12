@@ -2,7 +2,7 @@ from conans import ConanFile, CMake
 
 class LSlabConan(ConanFile):
     name = "lslab"
-    version = "2.0.1"
+    version = "2.0.2"
     author = "dePaul Miller"
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"

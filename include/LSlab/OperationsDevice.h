@@ -507,7 +507,7 @@ warp_operation_replace(bool &is_active, const K &myKey,
                 masked_ballot = (int) (__ballot_sync(~0u, foundEmptyNext) & VALID_KEY_MASK);
                 if (masked_ballot != 0) {
                     unsigned dest_lane = __ffs(masked_ballot) - 1;
-                    unsigned new_empty_next = shfl(~0u, empty_next, dest_lane);
+                    unsigned long long new_empty_next = shfl(~0u, empty_next, dest_lane);
                     if (src_lane == laneId) {
                         volatile K *addrKey = SlabAddressKey(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
                         volatile V *addrValue = SlabAddressValue(new_empty_next, src_bucket, dest_lane, slabs, num_of_buckets);
