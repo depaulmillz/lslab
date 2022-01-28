@@ -35,65 +35,9 @@ struct SlabData {
     KSub key[32]; // 256 byte
 
     V value[32]; // 256 byte
-
     // the 32nd element is next
-    //unsigned long long *next;
 };
 
-//template<typename V>
-//struct SlabData<char, V> {
-//
-//    typedef unsigned long long KSub;
-//
-//
-//    union {
-//        int ilock;
-//        char p[128];
-//    }; // 128 bytes
-//
-//    KSub key[32]; // 256 byte
-//
-//    V value[32]; // 256 byte
-//
-//    // the 32nd element is next
-//    //unsigned long long *next;
-//};
-//
-//template<typename V>
-//struct SlabData<short, V> {
-//
-//    typedef unsigned long long KSub;
-//
-//    union {
-//        int ilock;
-//        char p[128];
-//    }; // 128 bytes
-//
-//    KSub key[32]; // 256 byte
-//
-//    V value[32]; // 256 byte
-//
-//    // the 32nd element is next
-//    //unsigned long long *next;
-//};
-//
-//template<typename V>
-//struct SlabData<unsigned, V> {
-//
-//    typedef unsigned long long KSub;
-//
-//    union {
-//        int ilock;
-//        char p[128];
-//    }; // 128 bytes
-//
-//    KSub key[32]; // 256 byte
-//
-//    V value[32]; // 256 byte
-//
-//    // the 32nd element is next
-//    //unsigned long long *next;
-//};
 
 template<typename K, typename V>
 struct MemoryBlock {
@@ -131,12 +75,10 @@ LSLAB_DEVICE unsigned long long shfl(unsigned mask, unsigned long long val, int 
 
 template<typename K, typename V>
 struct WarpAllocCtx {
-    WarpAllocCtx() : blocks(nullptr) {
-        // creates default context
-    }
-    // just doing parallel shared-nothing allocation
+    WarpAllocCtx() : blocks(nullptr) {}
+
     LSLAB_DEVICE unsigned long long allocate() {
-    
+        // just doing parallel shared-nothing allocation
         const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
         const unsigned laneId = threadIdx.x & 0x1Fu;
         if (this->blocks == nullptr) {
@@ -158,7 +100,6 @@ struct WarpAllocCtx {
 
         auto location = (unsigned long long) (blocks[laneId].slab + index);
         if (ballotThread == laneId) {
-            //unsigned oldbitmap = bitmap;
             bitmap = bitmap ^ (1u << (unsigned) index);
             blocks[laneId].bitmap = bitmap;
         }
@@ -194,9 +135,6 @@ struct SlabCtx {
     volatile SlabData<K, V> **slabs;
     unsigned num_of_buckets;
 };
-
-//template<typename T>
-//__host__ __device__ unsigned hash(T src_key, unsigned num_of_buckets);
 
 /**
  * There is a barrier after this locking
@@ -315,7 +253,7 @@ SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
                  unsigned num_of_buckets) {
     return (next == BASE_SLAB ? slabs[src_bucket]->value : ((SlabData<K, V> *) next)->value) + laneId;
 }
-// manually inlined
+
 template<typename K, typename V>
 LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
                                                       V &myValue, const unsigned &modhash,
