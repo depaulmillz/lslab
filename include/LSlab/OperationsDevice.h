@@ -25,7 +25,7 @@ const unsigned long long EMPTY_POINTER = 0;
 template<typename K, typename V>
 struct SlabData {
 
-    typedef K KSub;
+    using KSub = typename std::conditional<sizeof(K) < sizeof(unsigned long long), unsigned long long, K>::type;
 
     union {
         int ilock;
@@ -40,60 +40,60 @@ struct SlabData {
     //unsigned long long *next;
 };
 
-template<typename V>
-struct SlabData<char, V> {
-
-    typedef unsigned long long KSub;
-
-
-    union {
-        int ilock;
-        char p[128];
-    }; // 128 bytes
-
-    KSub key[32]; // 256 byte
-
-    V value[32]; // 256 byte
-
-    // the 32nd element is next
-    //unsigned long long *next;
-};
-
-template<typename V>
-struct SlabData<short, V> {
-
-    typedef unsigned long long KSub;
-
-    union {
-        int ilock;
-        char p[128];
-    }; // 128 bytes
-
-    KSub key[32]; // 256 byte
-
-    V value[32]; // 256 byte
-
-    // the 32nd element is next
-    //unsigned long long *next;
-};
-
-template<typename V>
-struct SlabData<unsigned, V> {
-
-    typedef unsigned long long KSub;
-
-    union {
-        int ilock;
-        char p[128];
-    }; // 128 bytes
-
-    KSub key[32]; // 256 byte
-
-    V value[32]; // 256 byte
-
-    // the 32nd element is next
-    //unsigned long long *next;
-};
+//template<typename V>
+//struct SlabData<char, V> {
+//
+//    typedef unsigned long long KSub;
+//
+//
+//    union {
+//        int ilock;
+//        char p[128];
+//    }; // 128 bytes
+//
+//    KSub key[32]; // 256 byte
+//
+//    V value[32]; // 256 byte
+//
+//    // the 32nd element is next
+//    //unsigned long long *next;
+//};
+//
+//template<typename V>
+//struct SlabData<short, V> {
+//
+//    typedef unsigned long long KSub;
+//
+//    union {
+//        int ilock;
+//        char p[128];
+//    }; // 128 bytes
+//
+//    KSub key[32]; // 256 byte
+//
+//    V value[32]; // 256 byte
+//
+//    // the 32nd element is next
+//    //unsigned long long *next;
+//};
+//
+//template<typename V>
+//struct SlabData<unsigned, V> {
+//
+//    typedef unsigned long long KSub;
+//
+//    union {
+//        int ilock;
+//        char p[128];
+//    }; // 128 bytes
+//
+//    KSub key[32]; // 256 byte
+//
+//    V value[32]; // 256 byte
+//
+//    // the 32nd element is next
+//    //unsigned long long *next;
+//};
 
 template<typename K, typename V>
 struct MemoryBlock {
@@ -109,10 +109,78 @@ struct SuperBlock {
     MemoryBlock<K, V> *memblocks;// 32 memblocks
 };
 
+template<typename T>
+LSLAB_DEVICE T shfl(unsigned mask, T val, int offset) {
+    return cub::ShuffleIndex<32>(val, offset, mask);
+}
+
+template<>
+LSLAB_DEVICE unsigned shfl(unsigned mask, unsigned val, int offset) {
+    return __shfl_sync(mask, val, offset);
+}
+
+template<>
+LSLAB_DEVICE int shfl(unsigned mask, int val, int offset) {
+    return __shfl_sync(mask, val, offset);
+}
+
+template<>
+LSLAB_DEVICE unsigned long long shfl(unsigned mask, unsigned long long val, int offset) {
+    return __shfl_sync(mask, val, offset);
+}
+
 template<typename K, typename V>
 struct WarpAllocCtx {
     WarpAllocCtx() : blocks(nullptr) {
         // creates default context
+    }
+    // just doing parallel shared-nothing allocation
+    LSLAB_DEVICE unsigned long long allocate() {
+    
+        const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
+        const unsigned laneId = threadIdx.x & 0x1Fu;
+        if (this->blocks == nullptr) {
+            return 0;
+        }
+    
+        MemoryBlock<K, V> *blocks = this->blocks[warpIdx].memblocks;
+        unsigned bitmap = blocks[laneId].bitmap;
+        int index = __ffs((int) bitmap) - 1;
+        int ballotThread = __ffs((int) __ballot_sync(~0u, (index != -1))) - 1;
+        if (ballotThread == -1) {
+            if(laneId == 0)
+                printf("Ran out of memory\n");
+            __threadfence_system();
+            __syncwarp();
+            __trap();
+            return 0;
+        }
+
+        auto location = (unsigned long long) (blocks[laneId].slab + index);
+        if (ballotThread == laneId) {
+            //unsigned oldbitmap = bitmap;
+            bitmap = bitmap ^ (1u << (unsigned) index);
+            blocks[laneId].bitmap = bitmap;
+        }
+        location = shfl(~0u, location, ballotThread);
+    
+        return location;
+    }
+    
+    LSLAB_DEVICE void deallocate(unsigned long long l) {
+    
+        const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
+        const unsigned laneId = threadIdx.x & 0x1Fu;
+        if (this->blocks == nullptr) {
+            return;
+        }
+    
+        MemoryBlock<K, V> *blocks = this->blocks[warpIdx].memblocks;
+        if ((unsigned long long) blocks[laneId].slab <= l && (unsigned long long) (blocks[laneId].slab + 32) > l) {
+            unsigned diff = l - (unsigned long long) blocks[laneId].slab;
+            unsigned idx = diff / sizeof(SlabData<K, V>);
+            blocks[laneId].bitmap = blocks[laneId].bitmap | (1u << idx);
+        }
     }
 
     SuperBlock<K, V> *blocks;
@@ -247,77 +315,6 @@ SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
                  unsigned num_of_buckets) {
     return (next == BASE_SLAB ? slabs[src_bucket]->value : ((SlabData<K, V> *) next)->value) + laneId;
 }
-
-template<typename T>
-LSLAB_DEVICE T shfl(unsigned mask, T val, int offset) {
-    return cub::ShuffleIndex<32>(val, offset, mask);
-}
-
-template<>
-LSLAB_DEVICE unsigned shfl(unsigned mask, unsigned val, int offset) {
-    return __shfl_sync(mask, val, offset);
-}
-
-template<>
-LSLAB_DEVICE int shfl(unsigned mask, int val, int offset) {
-    return __shfl_sync(mask, val, offset);
-}
-
-template<>
-LSLAB_DEVICE unsigned long long shfl(unsigned mask, unsigned long long val, int offset) {
-    return __shfl_sync(mask, val, offset);
-}
-
-// just doing parallel shared-nothing allocation
-template<typename K, typename V>
-LSLAB_DEVICE unsigned long long warp_allocate(WarpAllocCtx<K, V> ctx) {
-
-    const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
-    const unsigned laneId = threadIdx.x & 0x1Fu;
-    if (ctx.blocks == nullptr) {
-        return 0;
-    }
-
-    MemoryBlock<K, V> *blocks = ctx.blocks[warpIdx].memblocks;
-    unsigned bitmap = blocks[laneId].bitmap;
-    int index = __ffs((int) bitmap) - 1;
-    int ballotThread = __ffs((int) __ballot_sync(~0u, (index != -1))) - 1;
-    if (ballotThread == -1) {
-        if(laneId == 0)
-            printf("Ran out of memory\n");
-        __threadfence_system();
-        __syncwarp();
-        __trap();
-        return 0;
-    }
-    auto location = (unsigned long long) (blocks[laneId].slab + index);
-    if (ballotThread == laneId) {
-        //unsigned oldbitmap = bitmap;
-        bitmap = bitmap ^ (1u << (unsigned) index);
-        blocks[laneId].bitmap = bitmap;
-    }
-    location = shfl(~0u, location, ballotThread);
-
-    return location;
-}
-
-template<typename K, typename V>
-LSLAB_DEVICE void deallocate(WarpAllocCtx<K, V> ctx, unsigned long long l) {
-
-    const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
-    const unsigned laneId = threadIdx.x & 0x1Fu;
-    if (ctx.blocks == nullptr) {
-        return;
-    }
-
-    MemoryBlock<K, V> *blocks = ctx.blocks[warpIdx].memblocks;
-    if ((unsigned long long) blocks[laneId].slab <= l && (unsigned long long) (blocks[laneId].slab + 32) > l) {
-        unsigned diff = l - (unsigned long long) blocks[laneId].slab;
-        unsigned idx = diff / sizeof(SlabData<K, V>);
-        blocks[laneId].bitmap = blocks[laneId].bitmap | (1u << idx);
-    }
-}
-
 // manually inlined
 template<typename K, typename V>
 LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
@@ -523,7 +520,7 @@ warp_operation_replace(bool &is_active, const K &myKey,
                         is_active = false;
                     }
                 } else {
-                    unsigned long long new_slab_ptr = warp_allocate(ctx);
+                    unsigned long long new_slab_ptr = ctx.allocate();
                     if (laneId == ADDRESS_LANE - 1) {
                         volatile K *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1,
                                                                                slabs, num_of_buckets);
@@ -648,7 +645,7 @@ warp_operation_delete_or_replace(bool &is_active, const K &myKey,
                             is_active = false;
                         }
                     } else {
-                        unsigned long long new_slab_ptr = warp_allocate(ctx);
+                        unsigned long long new_slab_ptr = ctx.allocate();
                         if (laneId == ADDRESS_LANE - 1) {
                             auto *slabAddr = SlabAddressKey(next, src_bucket, ADDRESS_LANE - 1, slabs, num_of_buckets);
                             *reinterpret_cast<volatile unsigned long long*>(slabAddr) = new_slab_ptr;

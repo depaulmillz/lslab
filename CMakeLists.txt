@@ -58,7 +58,7 @@ add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
 target_link_libraries(lslab_memory_benchmark lslab)
 
 add_executable(slabunified_test test/slabunified_test.cu)
-target_link_libraries(slabunified_test PRIVATE lslab CONAN_PKG::gtest gcov)
+target_link_libraries(slabunified_test PRIVATE lslab CONAN_PKG::gtest)
 add_test(NAME slabunified_test COMMAND slabunified_test)
 
 add_executable(asanslabunified_test test/slabunified_test.cu)
