@@ -27,6 +27,8 @@ struct SlabData {
 
     using KSub = typename std::conditional<sizeof(K) < sizeof(unsigned long long), unsigned long long, K>::type;
 
+    static_assert(alignof(KSub) % alignof(void*) == 0, "Alignment must be a multiple of the pointer alignment");
+
     union {
         int ilock;
         char p[128];

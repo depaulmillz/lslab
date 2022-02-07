@@ -352,7 +352,7 @@ struct Key {
 
     friend std::ostream& operator<<(std::ostream&, const Key&);
 
-    char bytes[128];
+    alignas(128) char bytes[128];
 };
 
 std::ostream& operator<<(std::ostream& s, const Key& k) {
