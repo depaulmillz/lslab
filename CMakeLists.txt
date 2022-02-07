@@ -11,12 +11,12 @@ endif()
 
 include(cmake/config.cmake)
 
-check_cuda_version(11.0 11.5)
+check_cuda_version(11.0 11.6)
 set_consistent_standard(11)
 setup_conan()
 
 if(NOT CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES "70;75")
+    set(CMAKE_CUDA_ARCHITECTURES "70;75;80;86")
     message(STATUS "Setting CUDA ARCHITECTURES to ${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
