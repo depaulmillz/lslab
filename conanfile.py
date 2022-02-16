@@ -6,7 +6,7 @@ class LSlabConan(ConanFile):
     author = "dePaul Miller"
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"
-    settings="os", "compiler", "build_type", "arch"
+    settings={"os" : ["Linux"], "compiler" : None, "build_type" : None, "arch": ["x86_64"] }
     requires="unifiedmemorygroupallocation/1.1"
     build_requires="gtest/1.10.0"
     generators="cmake"
