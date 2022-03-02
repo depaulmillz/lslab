@@ -1,9 +1,15 @@
+/**
+ * @file
+ */
 #include "OperationsDevice.h"
 
 #pragma once
 
 namespace lslab {
 
+/**
+ * LSlab map for GPU
+ */
 template<typename K, typename V>
 class LSlab {
 public:
@@ -17,18 +23,22 @@ public:
 
     LSLAB_HOST_DEVICE ~LSlab() {} 
 
+    /// Warp get with mask
     LSLAB_DEVICE void get(K& key, V& value, unsigned hash, bool threadMask = false) {
         warp_operation_search(threadMask, key, value, hash, slabs, number_of_buckets);
     }
     
+    /// Warp put with mask
     LSLAB_DEVICE void put(K& key, V& value, unsigned hash, bool threadMask = false) {
         warp_operation_replace(threadMask, key, value, hash, slabs, number_of_buckets, ctx);
     }
     
+    /// Warp remove with mask
     LSLAB_DEVICE void remove(K& key, V& value, unsigned hash, bool threadMask = false) {
         warp_operation_delete(threadMask, key, value, hash, slabs, number_of_buckets);
     }
 
+    /// Warp modify (update or remove) with mask
     LSLAB_DEVICE void modify(K& key, V& value, unsigned hash, Operation op, bool threadMask = false) {
         warp_operation_delete_or_replace(threadMask, key, value, hash, slabs, number_of_buckets, ctx, op);
     }

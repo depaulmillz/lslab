@@ -1,6 +1,6 @@
-//
-// Created by depaulsmiller on 7/24/20.
-//
+/**
+ * @file
+ */
 
 #include "LSlab.h"
 #include "Operations.h"

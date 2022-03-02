@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include <cassert>
 #include <cstdio>
 #include <cuda_runtime.h>
@@ -16,6 +19,7 @@ std::ostream &operator<<(std::ostream &output, const SlabData<K, V> &s) {
     return output;
 }
 
+/// Creates warp allocator context to be able to allocate slabs on GPU
 template<typename K, typename V>
 WarpAllocCtx<K, V>
 setupWarpAllocCtxGroup(groupallocator::GroupAllocator &gAlloc, int threadsPerBlock, int blocks, int gpuid = 0,
@@ -46,6 +50,7 @@ setupWarpAllocCtxGroup(groupallocator::GroupAllocator &gAlloc, int threadsPerBlo
     return actx;
 }
 
+/// Sets up LSlab using the group allocator
 template<typename K, typename V>
 LSLAB_HOST SlabCtx<K, V> *setUpGroup(groupallocator::GroupAllocator &gAlloc, unsigned size, int gpuid = 0,
                           cudaStream_t stream = cudaStreamDefault) {

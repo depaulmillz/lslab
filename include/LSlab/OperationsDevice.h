@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "LSlab.h"
 #include <cstdio>
 #include <cuda_runtime.h>
@@ -7,6 +10,7 @@
 
 namespace lslab {
 
+/// Operations LSlab can perform
 enum Operation {
     NOP = 0,
     GET = 2,
@@ -22,6 +26,7 @@ enum Operation {
 const unsigned long long EMPTY_POINTER = 0;
 #define BASE_SLAB 0
 
+/// Since Slab
 template<typename K, typename V>
 struct SlabData {
 
@@ -29,56 +34,66 @@ struct SlabData {
 
     static_assert(alignof(KSub) % alignof(void*) == 0, "Alignment must be a multiple of the pointer alignment");
 
+    /// Used to lock with padding to 128B cacheline
     union {
         int ilock;
-        char p[128];
+        alignas(128) char p[128];
     }; // 128 bytes
 
+    /// Keys where key[31] is the pointer to next
     KSub key[32]; // 256 byte
 
     V value[32]; // 256 byte
     // the 32nd element is next
 };
 
-
+/// Memory block for warp allocation
 template<typename K, typename V>
 struct MemoryBlock {
     MemoryBlock() : bitmap(~0u), slab(nullptr) {
     }
 
     unsigned long long bitmap;
+    /// 64 slabs
     SlabData<K, V> *slab;// 64 slabs
 };
 
+/// Struct for 32 MemoryBlocks
 template<typename K, typename V>
 struct SuperBlock {
     MemoryBlock<K, V> *memblocks;// 32 memblocks
 };
 
+/// Shfl wrapper
 template<typename T>
 LSLAB_DEVICE T shfl(unsigned mask, T val, int offset) {
     return cub::ShuffleIndex<32>(val, offset, mask);
 }
 
+/// Shfl wrapper for unsigned
 template<>
 LSLAB_DEVICE unsigned shfl(unsigned mask, unsigned val, int offset) {
     return __shfl_sync(mask, val, offset);
 }
 
+/// Shfl wrapper for int
 template<>
 LSLAB_DEVICE int shfl(unsigned mask, int val, int offset) {
     return __shfl_sync(mask, val, offset);
 }
 
+/// Shfl wrapper for ull
 template<>
 LSLAB_DEVICE unsigned long long shfl(unsigned mask, unsigned long long val, int offset) {
     return __shfl_sync(mask, val, offset);
 }
 
+/// Warp allocation contex
 template<typename K, typename V>
 struct WarpAllocCtx {
     WarpAllocCtx() : blocks(nullptr) {}
 
+    /// Parallel shared nothing allocation of a slab
     LSLAB_DEVICE unsigned long long allocate() {
         // just doing parallel shared-nothing allocation
         const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
@@ -110,6 +125,7 @@ struct WarpAllocCtx {
         return location;
     }
     
+    /// Deallocation of a slab
     LSLAB_DEVICE void deallocate(unsigned long long l) {
     
         const unsigned warpIdx = (threadIdx.x / 32) + blockIdx.x * (blockDim.x / 32);
@@ -130,6 +146,7 @@ struct WarpAllocCtx {
     // there should be a block per warp ie threadsPerBlock * blocks / 32 superblocks
 };
 
+/// SlabCtx is a wrapper for the slabs and number of buckets
 template<typename K, typename V>
 struct SlabCtx {
     SlabCtx() : slabs(nullptr), num_of_buckets(0) {}
