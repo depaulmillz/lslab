@@ -9,10 +9,15 @@
 
 namespace lslab {
 
+/**
+ * A type to store a chunk of data of the given size
+ */
 struct data_t {
 
+    /// Creates an empty data_t
     data_t() : size(0), data(nullptr) {}
 
+    /// Allocates a data_t of size s
     data_t(size_t s) : size(s), data(new char[s]) {}
 
     /// Note this doesn't free the underlying data
@@ -21,18 +26,21 @@ struct data_t {
     size_t size;
     char *data;
 
+    /// Shallow copy of the data_t
     data_t &operator=(const data_t &rhs) {
         this->size = rhs.size;
         this->data = rhs.data;
         return *this;
     }
 
+    /// Shallow copy of the data_t
     volatile data_t &operator=(const data_t &rhs) volatile {
         this->size = rhs.size;
         this->data = rhs.data;
         return *this;
     }
 
+    /// Checks if the size is the same and them memcmp
     LSLAB_HOST_DEVICE bool operator==(const data_t& other) const {
         if (size != other.size) {
             return false;
@@ -51,38 +59,11 @@ class Data_tDeleter{
     }
 };
 
-//template<>
-//struct EMPTY<data_t *> {
-//    static constexpr data_t *value = nullptr;
-//};
-
-//template<>
-//LSLAB_HOST_DEVICE unsigned compare(const data_t * lhs, const data_t * rhs) {
-//
-//    if (lhs == rhs) {
-//        return 0;
-//    } else if (lhs == nullptr || rhs == nullptr) {
-//        return 1;
-//    }
-//
-//    if (lhs->size != rhs->size) {
-//        return (unsigned) (lhs->size - rhs->size);
-//    }
-//
-//    for (size_t i = 0; i < lhs->size; i++) {
-//        unsigned sub = lhs->data[i] - rhs->data[i];
-//        if (sub != 0)
-//            return sub;
-//    }
-//
-//    return 0;
-//}
-
 }
 
 namespace std {
     template<>
-    struct std::hash<lslab::data_t *> {
+    struct hash<lslab::data_t *> {
         std::size_t operator()(lslab::data_t *&x) {
             return std::hash<std::string>{}(x->data) ^ std::hash<std::size_t>{}(x->size);
         }

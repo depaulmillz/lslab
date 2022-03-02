@@ -239,7 +239,13 @@ SharedUnlockSlab(const unsigned long long &next, const unsigned &src_bucket, con
 
 }
 
-
+/**
+ * Reads the key at index laneId at the bucket next or src_bucket from slabs
+ * @param next pointer to next either the pointer to a slab or null
+ * @param src_bucket the bucket we are operating on
+ * @param laneId the lane id of the thread
+ * @param slabs the hashmap
+ */
 template<typename K, typename V>
 LSLAB_DEVICE typename SlabData<K, V>::KSub
 ReadSlabKey(const unsigned long long &next, const unsigned &src_bucket,
@@ -249,6 +255,13 @@ ReadSlabKey(const unsigned long long &next, const unsigned &src_bucket,
         const_cast<typename SlabData<K, V>::KSub&>(reinterpret_cast<SlabData<K, V> *>(next)->key[laneId]);
 }
 
+/**
+ * Reads the value at index laneId at the bucket next or src_bucket from slabs
+ * @param next pointer to next either the pointer to a slab or null
+ * @param src_bucket the bucket we are operating on
+ * @param laneId the lane id of the thread
+ * @param slabs the hashmap
+ */
 template<typename K, typename V>
 LSLAB_DEVICE V
 ReadSlabValue(const unsigned long long &next, const unsigned &src_bucket,
@@ -256,6 +269,14 @@ ReadSlabValue(const unsigned long long &next, const unsigned &src_bucket,
     return (next == BASE_SLAB ? const_cast<SlabData<K, V>*>(slabs[src_bucket])->value[laneId] : reinterpret_cast<SlabData<K, V> *>(next)->value[laneId]);
 }
 
+/**
+ * Adresses the key at index laneId at the bucket next or src_bucket from slabs
+ * @param next pointer to next either the pointer to a slab or null
+ * @param src_bucket the bucket we are operating on
+ * @param laneId the lane id of the thread
+ * @param slabs the hashmap
+ * @param num_of_buckets
+ */
 
 template<typename K, typename V>
 LSLAB_DEVICE volatile typename SlabData<K, V>::KSub *
@@ -265,6 +286,14 @@ SlabAddressKey(const unsigned long long &next, const unsigned &src_bucket,
     return (volatile typename SlabData<K, V>::KSub *) ((next == BASE_SLAB ? slabs[src_bucket]->key : ((SlabData<K, V> *) next)->key) + laneId);
 }
 
+/**
+ * Addresses the value at index laneId at the bucket next or src_bucket from slabs
+ * @param next pointer to next either the pointer to a slab or null
+ * @param src_bucket the bucket we are operating on
+ * @param laneId the lane id of the thread
+ * @param slabs the hashmap
+ * @param num_of_buckets
+ */
 template<typename K, typename V>
 LSLAB_DEVICE volatile V *
 SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
@@ -273,6 +302,15 @@ SlabAddressValue(const unsigned long long &next, const unsigned &src_bucket,
     return (next == BASE_SLAB ? slabs[src_bucket]->value : ((SlabData<K, V> *) next)->value) + laneId;
 }
 
+/**
+ * Searches the bucket modhash for the value associated with myKey
+ * @param is_active
+ * @param myKey
+ * @param myValue
+ * @param modhash the bucket that has been hashed to
+ * @param slabs
+ * @param num_of_buckets
+ */
 template<typename K, typename V>
 LSLAB_DEVICE void warp_operation_search(bool &is_active, const K &myKey,
                                                       V &myValue, const unsigned &modhash,
@@ -400,6 +438,7 @@ warp_operation_delete(bool &is_active, const K &myKey,
     }
 }
 
+/// Replaces the value of myKey with myValue in bucket modhash
 template<typename K, typename V>
 LSLAB_DEVICE void
 warp_operation_replace(bool &is_active, const K &myKey,
