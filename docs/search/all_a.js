@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7edata_5ft_37',['~data_t',['../structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a',1,'lslab::data_t']]]
+  ['remove_34',['remove',['../classlslab_1_1LSlab.html#ad499ddcd9f409d901e0264a8f584d27e',1,'lslab::LSlab']]]
 ];

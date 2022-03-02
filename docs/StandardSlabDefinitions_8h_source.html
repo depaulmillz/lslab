@@ -69,16 +69,14 @@ $(function() {
 <div class="title">StandardSlabDefinitions.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">// Created by depaulsmiller on 8/28/20.</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">//</span></div>
+<a href="StandardSlabDefinitions_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;LSlab/LSlab.h&gt;</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;<a class="code" href="LSlab_8h.html">LSlab/LSlab.h</a>&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacelslab.html">lslab</a> {</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span>lslab {</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
 <div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html">   12</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structlslab_1_1data__t.html">data_t</a> {</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
@@ -151,7 +149,7 @@ $(function() {
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">namespace </span>std {</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">template</span>&lt;&gt;</div>
-<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="structstd_1_1std_1_1hash_3_01lslab_1_1data__t_01_5_01_4.html">   85</a></span>&#160;    <span class="keyword">struct </span>std::hash&lt;<a class="code" href="namespacelslab.html">lslab</a>::data_t *&gt; {</div>
+<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="structstd_1_1std_1_1hash_3_01lslab_1_1data__t_01_5_01_4.html">   85</a></span>&#160;    <span class="keyword">struct </span>std::hash&lt;lslab::data_t *&gt; {</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        std::size_t operator()(<a class="code" href="structlslab_1_1data__t.html">lslab::data_t</a> *&amp;x) {</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            <span class="keywordflow">return</span> std::hash&lt;std::string&gt;{}(x-&gt;data) ^ std::hash&lt;std::size_t&gt;{}(x-&gt;size);</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        }</div>
@@ -160,9 +158,9 @@ $(function() {
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="anamespacelslab_html"><div class="ttname"><a href="namespacelslab.html">lslab</a></div><div class="ttdef"><b>Definition:</b> gpumemory.h:6</div></div>
 <div class="ttc" id="astructlslab_1_1data__t_html"><div class="ttname"><a href="structlslab_1_1data__t.html">lslab::data_t</a></div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:12</div></div>
 <div class="ttc" id="aclasslslab_1_1Data__tDeleter_html"><div class="ttname"><a href="classlslab_1_1Data__tDeleter.html">lslab::Data_tDeleter</a></div><div class="ttdoc">For use with shared_ptr.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:47</div></div>
+<div class="ttc" id="aLSlab_8h_html"><div class="ttname"><a href="LSlab_8h.html">LSlab.h</a></div></div>
 <div class="ttc" id="astructlslab_1_1data__t_html_a0cd2f6ed01f849ea6c3a3896b9894f2a"><div class="ttname"><a href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">lslab::data_t::~data_t</a></div><div class="ttdeci">~data_t()</div><div class="ttdoc">Note this doesn't free the underlying data.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:19</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

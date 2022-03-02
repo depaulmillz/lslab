@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespacelslab.html">lslab</a></li><li class="navelem"><a class="el" href="structlslab_1_1MemoryBlock.html">MemoryBlock</a></li>  </ul>
+<li class="navelem"><b>lslab</b></li><li class="navelem"><a class="el" href="structlslab_1_1MemoryBlock.html">MemoryBlock</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -72,6 +72,11 @@ $(function() {
 <div class="title">lslab::MemoryBlock&lt; K, V &gt; Struct Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Memory block for warp allocation.  
+ <a href="structlslab_1_1MemoryBlock.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="OperationsDevice_8h_source.html">OperationsDevice.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -79,10 +84,16 @@ Public Attributes</h2></td></tr>
 unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><b>bitmap</b></td></tr>
 <tr class="separator:ab7b6dc7e8c9617aa3d2fca18b206bdf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cb80d727693da1e4aca612cfb4719ff"><td class="memItemLeft" align="right" valign="top"><a id="a5cb80d727693da1e4aca612cfb4719ff"></a>
-<a class="el" href="structlslab_1_1SlabData.html">SlabData</a>&lt; K, V &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>slab</b></td></tr>
+<a class="el" href="structlslab_1_1SlabData.html">SlabData</a>&lt; K, V &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlslab_1_1MemoryBlock.html#a5cb80d727693da1e4aca612cfb4719ff">slab</a></td></tr>
+<tr class="memdesc:a5cb80d727693da1e4aca612cfb4719ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">64 slabs <br /></td></tr>
 <tr class="separator:a5cb80d727693da1e4aca612cfb4719ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename K, typename V&gt;<br />
+struct lslab::MemoryBlock&lt; K, V &gt;</h3>
+
+<p>Memory block for warp allocation. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/LSlab/<a class="el" href="OperationsDevice_8h_source.html">OperationsDevice.h</a></li>
 </ul>
 </div><!-- contents -->

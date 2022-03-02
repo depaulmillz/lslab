@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespacelslab.html">lslab</a></li><li class="navelem"><a class="el" href="structlslab_1_1SlabData.html">SlabData</a></li>  </ul>
+<li class="navelem"><b>lslab</b></li><li class="navelem"><a class="el" href="structlslab_1_1SlabData.html">SlabData</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -73,6 +73,11 @@ $(function() {
 <div class="title">lslab::SlabData&lt; K, V &gt; Struct Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Since <a class="el" href="classlslab_1_1Slab.html">Slab</a>.  
+ <a href="structlslab_1_1SlabData.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="OperationsDevice_8h_source.html">OperationsDevice.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -91,15 +96,22 @@ union {</td></tr>
 &#160;&#160;&#160;char&#160;&#160;&#160;<b>p</b> [128]</td></tr>
 <tr class="separator:ac37da8e640132582a25913e6e1ad3c4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d4ac69a952ad936c614668e1cefbcc9"><td class="memItemLeft" valign="top">};&#160;</td><td class="memItemRight" valign="bottom"></td></tr>
+<tr class="memdesc:a5d4ac69a952ad936c614668e1cefbcc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to lock with padding to 128B cacheline. <br /></td></tr>
 <tr class="separator:a5d4ac69a952ad936c614668e1cefbcc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb11fe35809f8675c6140ae597c3b625"><td class="memItemLeft" align="right" valign="top"><a id="acb11fe35809f8675c6140ae597c3b625"></a>
-KSub&#160;</td><td class="memItemRight" valign="bottom"><b>key</b> [32]</td></tr>
+KSub&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlslab_1_1SlabData.html#acb11fe35809f8675c6140ae597c3b625">key</a> [32]</td></tr>
+<tr class="memdesc:acb11fe35809f8675c6140ae597c3b625"><td class="mdescLeft">&#160;</td><td class="mdescRight">Keys where key[31] is the pointer to next. <br /></td></tr>
 <tr class="separator:acb11fe35809f8675c6140ae597c3b625"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a837d53513694e85a5d4bda7ce88ee112"><td class="memItemLeft" align="right" valign="top"><a id="a837d53513694e85a5d4bda7ce88ee112"></a>
 V&#160;</td><td class="memItemRight" valign="bottom"><b>value</b> [32]</td></tr>
 <tr class="separator:a837d53513694e85a5d4bda7ce88ee112"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;typename K, typename V&gt;<br />
+struct lslab::SlabData&lt; K, V &gt;</h3>
+
+<p>Since <a class="el" href="classlslab_1_1Slab.html">Slab</a>. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/LSlab/<a class="el" href="OperationsDevice_8h_source.html">OperationsDevice.h</a></li>
 </ul>
 </div><!-- contents -->

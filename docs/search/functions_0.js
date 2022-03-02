@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['batch_66',['batch',['../classlslab_1_1SlabUnified.html#a6b9835733c894f3bd7a5b1f4a1452ad2',1,'lslab::SlabUnified::batch(BatchBuffer&lt; K, V, BLOCKS, THREADS_PER_BLOCK, UseHost &gt; *buffer)'],['../classlslab_1_1SlabUnified.html#a72ac6e5878692d104ba3109644bdbe3b',1,'lslab::SlabUnified::batch(BatchBuffer&lt; K, V, BLOCKS, THREADS_PER_BLOCK, UseHost &gt; *buffer, unsigned blocks, unsigned threads_per_block, cudaStream_t stream)'],['../classlslab_1_1SlabUnified.html#a1a636d323debea04e5c4b32258c04beb',1,'lslab::SlabUnified::batch(BatchBuffer&lt; K, V, BLOCKS, THREADS_PER_BLOCK, UseHost &gt; *buffer, float &amp;time)'],['../classlslab_1_1SlabUnified.html#a7d54a08df989319e0b17e1fb9f644edf',1,'lslab::SlabUnified::batch(BatchBuffer&lt; K, V, BLOCKS, THREADS_PER_BLOCK, UseHost &gt; *buffer, float &amp;time, unsigned blocks, unsigned threads_per_block, cudaStream_t stream)']]]
+  ['allocate_91',['allocate',['../structlslab_1_1WarpAllocCtx.html#a5606c632a2a38ef7e90b156aa8e3ceda',1,'lslab::WarpAllocCtx']]]
 ];

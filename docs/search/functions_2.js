@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['lockslab_68',['LockSlab',['../namespacelslab.html#a6fed2cac458dd7f3f6f489146f187495',1,'lslab']]]
+  ['deallocate_93',['deallocate',['../structlslab_1_1WarpAllocCtx.html#a51c5030a24c68c1bd7a4f6b7c1de84be',1,'lslab::WarpAllocCtx']]],
+  ['diy_5fbatch_94',['diy_batch',['../classlslab_1_1SlabUnified.html#a81274d71d0a522ff960fe08d18ad1f44',1,'lslab::SlabUnified']]]
 ];
