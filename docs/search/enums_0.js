@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['operation_114',['Operation',['../OperationsDevice_8h.html#af8e475c11be41db360a4901116c772a4',1,'lslab']]]
+  ['operation_115',['Operation',['../OperationsDevice_8h.html#af8e475c11be41db360a4901116c772a4',1,'lslab']]]
 ];

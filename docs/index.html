@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>LSLab: Main Page</title>
+<title>LSLab: LSlab</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -60,11 +60,47 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">LSLab Documentation</div>  </div>
+<div class="title">LSlab </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p>Designed in "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, Jacob Nelson, Ahmed Hassan, and Roberto Palmieri."</p>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Building</h1>
+<p>Requires CMake &gt;= 3.18, Conan, and a CUDA version in 11.0 to 11.6.</p>
+<p>We also require <a href="https://github.com/depaulmillz/UnifiedMemoryGroupAllocation">UnifiedMemoryGroupAllocation</a> built through conan.</p>
+<p>Get CMake from kitware and Conan from your favorite python package manager.</p>
+<p>It is easiest to get conan from pip by running </p><div class="fragment"><div class="line">pip install conan</div>
+</div><!-- fragment --><p><a href="https://cmake.org">Install CMake from Here!</a></p>
+<p>Next make a build directory and install with conan, and then build. </p><div class="fragment"><div class="line">mkdir build</div>
+<div class="line">cd build</div>
+<div class="line">conan install --build missing ..</div>
+<div class="line">conan build ..</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md2"></a>
+Conan Options</h1>
+<ul>
+<li>cuda_arch is an option to specify the SM architecture you want to compile for, by default we compile for sm70 to sm86</li>
+<li>cuda_compiler is an option to specify the CUDA compiler for example nvcc or clang++-13</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Code Organization</h1>
+<ul>
+<li>include/LSlab contains all of the LSlab code</li>
+<li><a class="el" href="LSlab_8h.html">LSlab.h</a> contains basic macros</li>
+<li><a class="el" href="LSlabMap_8h.html">LSlabMap.h</a> contains a GPU interface for the map</li>
+<li><a class="el" href="Operations_8h.html">Operations.h</a> contains code for setting up lslab on the host</li>
+<li><a class="el" href="OperationsDevice_8h.html">OperationsDevice.h</a> contains code for using lslab on the device</li>
+<li><a class="el" href="Slab_8h.html">Slab.h</a> contains basic structures for the host</li>
+<li>StandardSlabDefintions.h contains definitions used by lslab</li>
+<li><a class="el" href="gpumemory_8h.html">gpumemory.h</a> contains GPU memory management functions.</li>
+<li>stdrequestHandler.cuh contains kernels</li>
+<li>test/ contains tests</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md4"></a>
+Clang Support</h1>
+<p>Clang seems to have an issue compiling the code that makes the tests fail. I am not going to fix this as of this moment unless necessary. </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
