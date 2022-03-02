@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "LSlab.h"
 #include <iostream>
 
@@ -5,6 +8,9 @@
 
 namespace lslab {
 
+/**
+ * Creates CPU backed GPU memory to move between GPU and CPU
+ */
 template<typename T>
 struct GPUCPUMemory {
 

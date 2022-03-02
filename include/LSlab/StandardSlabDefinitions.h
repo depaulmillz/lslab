@@ -1,6 +1,6 @@
-//
-// Created by depaulsmiller on 8/28/20.
-//
+/**
+ * @file
+ */
 #include <functional>
 #include <string>
 #include <LSlab/LSlab.h>
