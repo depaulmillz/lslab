@@ -65,9 +65,12 @@ $(function() {
 <div class="title">LSlab </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Designed in "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, Jacob Nelson, Ahmed Hassan, and Roberto Palmieri."</p>
-<h1><a class="anchor" id="autotoc_md1"></a>
-Building</h1>
+<div class="textblock"><p>Designed in "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, Jacob Nelson, Ahmed Hassan, and Roberto Palmieri.</p>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Hardware</h2>
+<p>Runs on Volta, sm_70, or greater.</p>
+<h2><a class="anchor" id="autotoc_md2"></a>
+Building</h2>
 <p>Requires CMake &gt;= 3.18, Conan, and a CUDA version in 11.0 to 11.6.</p>
 <p>We also require <a href="https://github.com/depaulmillz/UnifiedMemoryGroupAllocation">UnifiedMemoryGroupAllocation</a> built through conan.</p>
 <p>Get CMake from kitware and Conan from your favorite python package manager.</p>
@@ -77,14 +80,14 @@ Building</h1>
 <div class="line">cd build</div>
 <div class="line">conan install --build missing ..</div>
 <div class="line">conan build ..</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md2"></a>
-Conan Options</h1>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md3"></a>
+Conan Options</h2>
 <ul>
 <li>cuda_arch is an option to specify the SM architecture you want to compile for, by default we compile for sm70 to sm86</li>
 <li>cuda_compiler is an option to specify the CUDA compiler for example nvcc or clang++-13</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md3"></a>
-Code Organization</h1>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Code Organization</h2>
 <ul>
 <li>include/LSlab contains all of the LSlab code</li>
 <li><a class="el" href="LSlab_8h.html">LSlab.h</a> contains basic macros</li>
@@ -92,12 +95,12 @@ Code Organization</h1>
 <li><a class="el" href="Operations_8h.html">Operations.h</a> contains code for setting up lslab on the host</li>
 <li><a class="el" href="OperationsDevice_8h.html">OperationsDevice.h</a> contains code for using lslab on the device</li>
 <li><a class="el" href="Slab_8h.html">Slab.h</a> contains basic structures for the host</li>
-<li>StandardSlabDefintions.h contains definitions used by lslab</li>
+<li><a class="el" href="StandardSlabDefinitions_8h.html">StandardSlabDefinitions.h</a> contains definitions used by lslab</li>
 <li><a class="el" href="gpumemory_8h.html">gpumemory.h</a> contains GPU memory management functions.</li>
 <li>stdrequestHandler.cuh contains kernels</li>
-<li>test/ contains tests</li>
+<li>test contains tests</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md4"></a>
+<h1><a class="anchor" id="autotoc_md5"></a>
 Clang Support</h1>
 <p>Clang seems to have an issue compiling the code that makes the tests fail. I am not going to fix this as of this moment unless necessary. </p>
 </div></div><!-- PageDoc -->

@@ -78,90 +78,68 @@ $(function() {
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span>lslab {</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
-<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html">   12</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structlslab_1_1data__t.html">data_t</a> {</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <a class="code" href="structlslab_1_1data__t.html">data_t</a>() : size(0), data(<span class="keyword">nullptr</span>) {}</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <a class="code" href="structlslab_1_1data__t.html">data_t</a>(<span class="keywordtype">size_t</span> s) : size(s), data(<span class="keyword">new</span> <span class="keywordtype">char</span>[s]) {}</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">   19</a></span>&#160;    <a class="code" href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">~data_t</a>() {}</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordtype">size_t</span> size;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">char</span> *data;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;operator=(<span class="keyword">const</span> <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;rhs) {</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        this-&gt;size = rhs.size;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        this-&gt;data = rhs.data;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    }</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keyword">volatile</span> data_t &amp;operator=(<span class="keyword">const</span> data_t &amp;rhs)<span class="keyword"> volatile </span>{</div>
+<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html">   15</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structlslab_1_1data__t.html">data_t</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#ab7d472436d128ebb156fb09631257d7d">   18</a></span>&#160;    <a class="code" href="structlslab_1_1data__t.html#ab7d472436d128ebb156fb09631257d7d">data_t</a>() : size(0), data(nullptr) {}</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#aa599ca282abe64726e19bc9f64d7c741">   21</a></span>&#160;    <a class="code" href="structlslab_1_1data__t.html#aa599ca282abe64726e19bc9f64d7c741">data_t</a>(<span class="keywordtype">size_t</span> s) : size(s), data(new char[s]) {}</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">   24</a></span>&#160;    <a class="code" href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">~data_t</a>() {}</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">size_t</span> size;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">char</span> *data;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#a0356fadc379c249edf52e7c9bd8c3dc1">   30</a></span>&#160;    <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;<a class="code" href="structlslab_1_1data__t.html#a0356fadc379c249edf52e7c9bd8c3dc1">operator=</a>(<span class="keyword">const</span> <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;rhs) {</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        this-&gt;size = rhs.size;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        this-&gt;data = rhs.data;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    }</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    LSLAB_HOST_DEVICE <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> data_t&amp; other)<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">if</span> (size != other.size) {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        }</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">return</span> memcmp(data, other.data, size) == 0;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;};</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classlslab_1_1Data__tDeleter.html">   47</a></span>&#160;<span class="keyword">class </span><a class="code" href="classlslab_1_1Data__tDeleter.html">Data_tDeleter</a>{</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">void</span> operator()(<a class="code" href="structlslab_1_1data__t.html">data_t</a>* ptr) <span class="keyword">const</span> noexcept {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">delete</span>[] ptr-&gt;data;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">delete</span> ptr;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    }</div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#a6b0150bfbdcf8bc46fc1a813b62dc410">   37</a></span>&#160;    <span class="keyword">volatile</span> <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;<a class="code" href="structlslab_1_1data__t.html#a6b0150bfbdcf8bc46fc1a813b62dc410">operator=</a>(<span class="keyword">const</span> <a class="code" href="structlslab_1_1data__t.html">data_t</a> &amp;rhs)<span class="keyword"> volatile </span>{</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        this-&gt;size = rhs.size;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        this-&gt;data = rhs.data;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    }</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="structlslab_1_1data__t.html#ae243ed7f674972f412f852c21c9f8aea">   44</a></span>&#160;    LSLAB_HOST_DEVICE <span class="keywordtype">bool</span> <a class="code" href="structlslab_1_1data__t.html#ae243ed7f674972f412f852c21c9f8aea">operator==</a>(<span class="keyword">const</span> <a class="code" href="structlslab_1_1data__t.html">data_t</a>&amp; other)<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">if</span> (size != other.size) {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">return</span> memcmp(data, other.data, size) == 0;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;};</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">//template&lt;&gt;</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">//struct EMPTY&lt;data_t *&gt; {</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">//    static constexpr data_t *value = nullptr;</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">//};</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">//template&lt;&gt;</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">//LSLAB_HOST_DEVICE unsigned compare(const data_t * lhs, const data_t * rhs) {</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">//    if (lhs == rhs) {</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">//        return 0;</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">//    } else if (lhs == nullptr || rhs == nullptr) {</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">//        return 1;</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">//    }</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">//    if (lhs-&gt;size != rhs-&gt;size) {</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">//        return (unsigned) (lhs-&gt;size - rhs-&gt;size);</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">//    }</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">//    for (size_t i = 0; i &lt; lhs-&gt;size; i++) {</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">//        unsigned sub = lhs-&gt;data[i] - rhs-&gt;data[i];</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">//        if (sub != 0)</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">//            return sub;</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">//    }</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">//</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">//    return 0;</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">//}</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;}</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">namespace </span>std {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">template</span>&lt;&gt;</div>
-<div class="line"><a name="l00085"></a><span class="lineno"><a class="line" href="structstd_1_1std_1_1hash_3_01lslab_1_1data__t_01_5_01_4.html">   85</a></span>&#160;    <span class="keyword">struct </span>std::hash&lt;lslab::data_t *&gt; {</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        std::size_t operator()(<a class="code" href="structlslab_1_1data__t.html">lslab::data_t</a> *&amp;x) {</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            <span class="keywordflow">return</span> std::hash&lt;std::string&gt;{}(x-&gt;data) ^ std::hash&lt;std::size_t&gt;{}(x-&gt;size);</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        }</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    };</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;}</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="classlslab_1_1Data__tDeleter.html">   55</a></span>&#160;<span class="keyword">class </span><a class="code" href="classlslab_1_1Data__tDeleter.html">Data_tDeleter</a>{</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">void</span> operator()(<a class="code" href="structlslab_1_1data__t.html">data_t</a>* ptr) <span class="keyword">const</span> noexcept {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keyword">delete</span>[] ptr-&gt;data;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keyword">delete</span> ptr;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;};</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;}</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="keyword">namespace </span>std {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">template</span>&lt;&gt;</div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structstd_1_1hash_3_01lslab_1_1data__t_01_5_01_4.html">   66</a></span>&#160;    <span class="keyword">struct </span>hash&lt;lslab::data_t *&gt; {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        std::size_t operator()(<a class="code" href="structlslab_1_1data__t.html">lslab::data_t</a> *&amp;x) {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            <span class="keywordflow">return</span> std::hash&lt;std::string&gt;{}(x-&gt;data) ^ std::hash&lt;std::size_t&gt;{}(x-&gt;size);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    };</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="astructlslab_1_1data__t_html"><div class="ttname"><a href="structlslab_1_1data__t.html">lslab::data_t</a></div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:12</div></div>
-<div class="ttc" id="aclasslslab_1_1Data__tDeleter_html"><div class="ttname"><a href="classlslab_1_1Data__tDeleter.html">lslab::Data_tDeleter</a></div><div class="ttdoc">For use with shared_ptr.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:47</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_aa599ca282abe64726e19bc9f64d7c741"><div class="ttname"><a href="structlslab_1_1data__t.html#aa599ca282abe64726e19bc9f64d7c741">lslab::data_t::data_t</a></div><div class="ttdeci">data_t(size_t s)</div><div class="ttdoc">Allocates a data_t of size s.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:21</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_ae243ed7f674972f412f852c21c9f8aea"><div class="ttname"><a href="structlslab_1_1data__t.html#ae243ed7f674972f412f852c21c9f8aea">lslab::data_t::operator==</a></div><div class="ttdeci">LSLAB_HOST_DEVICE bool operator==(const data_t &amp;other) const</div><div class="ttdoc">Checks if the size is the same and them memcmp.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:44</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_a0356fadc379c249edf52e7c9bd8c3dc1"><div class="ttname"><a href="structlslab_1_1data__t.html#a0356fadc379c249edf52e7c9bd8c3dc1">lslab::data_t::operator=</a></div><div class="ttdeci">data_t &amp; operator=(const data_t &amp;rhs)</div><div class="ttdoc">Shallow copy of the data_t.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:30</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_ab7d472436d128ebb156fb09631257d7d"><div class="ttname"><a href="structlslab_1_1data__t.html#ab7d472436d128ebb156fb09631257d7d">lslab::data_t::data_t</a></div><div class="ttdeci">data_t()</div><div class="ttdoc">Creates an empty data_t.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:18</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html"><div class="ttname"><a href="structlslab_1_1data__t.html">lslab::data_t</a></div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:15</div></div>
+<div class="ttc" id="aclasslslab_1_1Data__tDeleter_html"><div class="ttname"><a href="classlslab_1_1Data__tDeleter.html">lslab::Data_tDeleter</a></div><div class="ttdoc">For use with shared_ptr.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:55</div></div>
 <div class="ttc" id="aLSlab_8h_html"><div class="ttname"><a href="LSlab_8h.html">LSlab.h</a></div></div>
-<div class="ttc" id="astructlslab_1_1data__t_html_a0cd2f6ed01f849ea6c3a3896b9894f2a"><div class="ttname"><a href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">lslab::data_t::~data_t</a></div><div class="ttdeci">~data_t()</div><div class="ttdoc">Note this doesn't free the underlying data.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:19</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_a0cd2f6ed01f849ea6c3a3896b9894f2a"><div class="ttname"><a href="structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a">lslab::data_t::~data_t</a></div><div class="ttdeci">~data_t()</div><div class="ttdoc">Note this doesn't free the underlying data.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:24</div></div>
+<div class="ttc" id="astructlslab_1_1data__t_html_a6b0150bfbdcf8bc46fc1a813b62dc410"><div class="ttname"><a href="structlslab_1_1data__t.html#a6b0150bfbdcf8bc46fc1a813b62dc410">lslab::data_t::operator=</a></div><div class="ttdeci">volatile data_t &amp; operator=(const data_t &amp;rhs) volatile</div><div class="ttdoc">Shallow copy of the data_t.</div><div class="ttdef"><b>Definition:</b> StandardSlabDefinitions.h:37</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

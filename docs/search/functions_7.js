@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['remove_103',['remove',['../classlslab_1_1LSlab.html#ad499ddcd9f409d901e0264a8f584d27e',1,'lslab::LSlab']]]
+  ['put_113',['put',['../classlslab_1_1LSlab.html#a366f01f597f2084bae1c7ea68bae7b6e',1,'lslab::LSlab']]]
 ];

@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['_7edata_5ft_112',['~data_t',['../structlslab_1_1data__t.html#a0cd2f6ed01f849ea6c3a3896b9894f2a',1,'lslab::data_t']]]
+  ['warp_5foperation_5fdelete_125',['warp_operation_delete',['../OperationsDevice_8h.html#a3a5f4dcb84e036df7dcf7fe452ecf860',1,'lslab']]],
+  ['warp_5foperation_5fdelete_5for_5freplace_126',['warp_operation_delete_or_replace',['../OperationsDevice_8h.html#a1b4f7ad02315fc61a407a8a9a3780287',1,'lslab']]],
+  ['warp_5foperation_5freplace_127',['warp_operation_replace',['../OperationsDevice_8h.html#a73a7bdc8e24f25aed06f35406bbf7bd2',1,'lslab']]],
+  ['warp_5foperation_5fsearch_128',['warp_operation_search',['../OperationsDevice_8h.html#a98b317249f3c2c017397d641b1311300',1,'lslab']]]
 ];
