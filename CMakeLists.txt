@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.18)
 
 project(LSlab LANGUAGES CUDA CXX)
 
-option(USING_CONAN "Set if building through the conan script" OFF)
-
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
     message(STATUS "SET CMAKE_BUILD_TYPE to Release")

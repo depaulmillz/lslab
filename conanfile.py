@@ -28,7 +28,6 @@ class LSlabConan(ConanFile):
         cmake = CMake(self)
         cmake.definitions["CMAKE_CUDA_ARCHITECTURES"] = str(self.options.cuda_arch)
         cmake.definitions["CMAKE_CUDA_COMPILER"] = str(self.options.cuda_compiler)
-        cmake.definitions["USING_CONAN"] = "ON"
         cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = "ON"
         cmake.configure()
         return cmake
