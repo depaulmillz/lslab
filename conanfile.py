@@ -2,14 +2,13 @@ from conans import ConanFile, CMake
 
 class LSlabConan(ConanFile):
     name = "lslab"
-    version = "2.1.1"
+    version = "3.0.0"
     author = "dePaul Miller"
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"
     settings={"os" : ["Linux"], "compiler" : None, "build_type" : None, "arch": ["x86_64"] }
     requires="unifiedmemorygroupallocation/1.1"
-    build_requires="gtest/1.10.0"
-    generators="cmake"
+    generators="cmake_find_package"
     description = """The LSlab GPU hashmap was designed in the paper
     "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, 
     Jacob Nelson, Ahmed Hassan, and Roberto Palmieri."

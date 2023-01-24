@@ -21,16 +21,24 @@
  */
 
 #include <iostream>
-#include <gtest/gtest.h>
 #include "testheader.h"
 #include <unordered_map>
+#include <stdexcept>
+
+#define ASSERT(x, y) \
+if (!(x)) { \
+    throw std::runtime_error((y)); \
+}
+
+#define ASSERT_EQ(x, y, z) ASSERT(((x) == (y)), (z))
+#define ASSERT_NE(x, y, z) ASSERT(((x) != (y)), (z))
 
 using namespace lslab;
 
 const int BLOCKS = 128;
 const int THREADS_PER_BLOCK = 512;
 
-TEST(slabunified_test, MemoryLeakageTest) {
+void MemoryLeakageTest() {
 
     const int size = 1000;
     std::hash<unsigned> hfn;
@@ -102,7 +110,7 @@ TEST(slabunified_test, MemoryLeakageTest) {
     delete b;
 }
 
-TEST(slabunified_test, GetPutTest) {
+void GetPutTest() {
 
     const int size = 1000;
     std::hash<unsigned> hfn;
@@ -137,9 +145,9 @@ TEST(slabunified_test, GetPutTest) {
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_INSERT && b->getBatchValues()[j] != nullptr) {
 
-                    GTEST_ASSERT_NE(b->getBatchValues()[j], nullptr);
+                    ASSERT(b->getBatchValues()[j] != nullptr, "GetPutTest fail");
                     for (int w = 0; w < 256; w++) {
-                        GTEST_ASSERT_EQ(b->getBatchValues()[j][w], rep - 1) << " old insert was rep - 1";
+                        ASSERT(b->getBatchValues()[j][w] == rep - 1, "GetPutTest fail old insert was rep - 1");
                     }
 
                     delete[] b->getBatchValues()[j];
@@ -169,9 +177,9 @@ TEST(slabunified_test, GetPutTest) {
                     delete[] b->getBatchValues()[j];
                 }
                 if (b->getBatchRequests()[j] == REQUEST_GET) {
-                    GTEST_ASSERT_NE(b->getBatchValues()[j], nullptr);
+                    ASSERT(b->getBatchValues()[j] != nullptr, "");
                     for (int w = 0; w < 256; w++) {
-                        GTEST_ASSERT_EQ(b->getBatchValues()[j][w], rep) << " last insert was rep";
+                        ASSERT(b->getBatchValues()[j][w] == rep, " last insert was rep");
                     }
                 }
             }
@@ -181,7 +189,7 @@ TEST(slabunified_test, GetPutTest) {
     delete b;
 }
 
-TEST(slabunified_test, PutRemoveTest) {
+void PutRemoveTest() {
 
     const int size = 1000;
     std::hash<unsigned> hfn;
@@ -215,7 +223,7 @@ TEST(slabunified_test, PutRemoveTest) {
             j = 0;
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_INSERT) {
-                    GTEST_ASSERT_EQ(b->getBatchValues()[j], nullptr) << " should always be reading nullptr last";
+                    ASSERT_EQ(b->getBatchValues()[j], nullptr, " should always be reading nullptr last");
                 }
             }
         }
@@ -239,9 +247,9 @@ TEST(slabunified_test, PutRemoveTest) {
             j = 0;
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_REMOVE) {
-                    GTEST_ASSERT_NE(b->getBatchValues()[j], nullptr) << " key value pair was inserted on key";
+                    ASSERT_NE(b->getBatchValues()[j], nullptr, " key value pair was inserted on key");
                     for (int w = 0; w < 256; w++) {
-                        GTEST_ASSERT_EQ(b->getBatchValues()[j][w], rep) << " last insert was rep";
+                        ASSERT_EQ(b->getBatchValues()[j][w], rep, " last insert was rep");
                     }
                     delete[] b->getBatchValues()[j];
                 }
@@ -252,7 +260,7 @@ TEST(slabunified_test, PutRemoveTest) {
     delete b;
 }
 
-TEST(slabunified_test, PutRemoveTest_uint64) {
+void PutRemoveTest_uint64() {
 
 
     const int size = 1000;
@@ -288,7 +296,7 @@ TEST(slabunified_test, PutRemoveTest_uint64) {
             j = 0;
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_INSERT) {
-                    GTEST_ASSERT_EQ(b->getBatchValues()[j], nullptr) << " should always be reading nullptr last";
+                    ASSERT_EQ(b->getBatchValues()[j], nullptr, " should always be reading nullptr last");
                 }
             }
         }
@@ -312,9 +320,9 @@ TEST(slabunified_test, PutRemoveTest_uint64) {
             j = 0;
             for (; j < THREADS_PER_BLOCK * BLOCKS; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_REMOVE) {
-                    GTEST_ASSERT_NE(b->getBatchValues()[j], nullptr) << " key value pair was inserted on key";
+                    ASSERT_NE(b->getBatchValues()[j], nullptr, " key value pair was inserted on key");
                     for (int w = 0; w < 256; w++) {
-                        GTEST_ASSERT_EQ(b->getBatchValues()[j][w], rep) << " last insert was rep";
+                        ASSERT_EQ(b->getBatchValues()[j][w], rep, " last insert was rep");
                     }
                     delete[] b->getBatchValues()[j];
                 }
@@ -375,7 +383,7 @@ struct hash<Key> {
 
 }
 
-TEST(slabunified_test, PutRemoveTest_128B) {
+void PutRemoveTest_128B() {
 
 
     const int BLOCKS_ = 128;
@@ -422,7 +430,8 @@ TEST(slabunified_test, PutRemoveTest_128B) {
             j = 0;
             for (; j < CHOSEN_THREADS_PER_BLOCK * BLOCKS_; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_INSERT) {
-                    GTEST_ASSERT_EQ(b->getBatchValues()[j], nullptr) << " should always be reading nullptr last. Found incorrect at " << j;
+                    ASSERT_EQ(b->getBatchValues()[j], nullptr, " should always be reading nullptr last. Found incorrect at ");
+
                 }
             }
         }
@@ -449,10 +458,10 @@ TEST(slabunified_test, PutRemoveTest_128B) {
             j = 0;
             for (; j < CHOSEN_THREADS_PER_BLOCK * BLOCKS_; j++) {
                 if (b->getBatchRequests()[j] == REQUEST_REMOVE) {
-                    GTEST_ASSERT_NE(b->getBatchValues()[j], nullptr) << " when removing found nullptr at " << j << " for reference it is " << (void*)reference[j];
-                    GTEST_ASSERT_EQ(b->getBatchValues()[j], reference[b->getBatchKeys()[j]]) << " batch values should equal reference at j = " << j << " but found " << reverse[b->getBatchValues()[j]]; 
+                    ASSERT_NE(b->getBatchValues()[j], nullptr, "");
+                    ASSERT_EQ(b->getBatchValues()[j], reference[b->getBatchKeys()[j]], "");
                     for (int w = 0; w < 256; w++) {
-                        GTEST_ASSERT_EQ(b->getBatchValues()[j][w], rep) << " last insert was " << rep << " pointer is " << b->getBatchValues()[j] << " j is " << j << " w is " << w << " the pointer should be " << (void*) reference[j] << " and it is" << (b->getBatchValues()[j] == reference[b->getBatchKeys()[j]] ? "" : " not");
+                        ASSERT_EQ(b->getBatchValues()[j][w], rep, "");
                     }
                     delete[] b->getBatchValues()[j];
                     b->getBatchValues()[j] = nullptr;
@@ -464,7 +473,7 @@ TEST(slabunified_test, PutRemoveTest_128B) {
     delete b;
 }
 
-TEST(slabunified_test, PutRemoveTest_128Bto128B) {
+void PutRemoveTest_128Bto128B() {
 
 
     const int BLOCKS_ = 10;
@@ -530,4 +539,15 @@ TEST(slabunified_test, PutRemoveTest_128Bto128B) {
     }
 
     delete b;
+}
+
+int main() {
+
+    MemoryLeakageTest();
+    GetPutTest();
+    PutRemoveTest();
+    PutRemoveTest_uint64();
+    PutRemoveTest_128B();
+    PutRemoveTest_128Bto128B();
+    return 0;
 }
