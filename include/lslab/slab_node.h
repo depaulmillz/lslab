@@ -17,7 +17,7 @@ struct slab_node {
     // whether it is empty or not
     alignas(32) uint32_t valid = 0;    
     K key[31];
-    slab_node<K, V>* next;
+    slab_node<K, V>* next = nullptr;
     V value[32];
 };    
 

@@ -48,7 +48,6 @@ add_library(lslab INTERFACE)
 target_include_directories(lslab INTERFACE 
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(lslab INTERFACE UnifiedMemoryGroupAllocation::UnifiedMemoryGroupAllocation)
 
 add_executable(lslab_benchmark benchmark/benchmark.cu)
 target_link_libraries(lslab_benchmark lslab)
@@ -57,7 +56,7 @@ target_link_libraries(lslab_benchmark lslab)
 #target_link_libraries(lslab_memory_benchmark lslab)
 
 add_executable(slabunified_test test/slabunified_test.cu)
-target_link_libraries(slabunified_test PRIVATE lslab)
+target_link_libraries(slabunified_test PRIVATE lslab UnifiedMemoryGroupAllocation::UnifiedMemoryGroupAllocation)
 add_test(NAME slabunified_test COMMAND slabunified_test)
 
 #add_executable(asanslabunified_test test/slabunified_test.cu)

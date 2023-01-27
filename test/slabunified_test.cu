@@ -27,6 +27,7 @@
 #include <thrust/sequence.h>
 #include <thrust/host_vector.h>
 #include <thrust/iterator/zip_iterator.h>
+#include <GroupAllocator/GroupAllocator.h>
 
 #define ASSERT(x, y) \
 if (!(x)) { \
@@ -38,14 +39,127 @@ if (!(x)) { \
 
 using namespace lslab;
 
-const int BLOCKS = 128;
-const int THREADS_PER_BLOCK = 512;
-
 void GetPutTest() {
 
     constexpr int size = 1024;
 
     map<int, int> m(10);
+
+    for (int rep = 0; rep < 100; rep++) {
+        thrust::device_vector<int> keys(size);
+        thrust::sequence(keys.begin(), keys.end(), 1);
+
+        thrust::device_vector<int> values(size, rep);
+        thrust::device_vector<int> res1(size);
+
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Putting" << std::endl;
+
+        ASSERT_EQ(values.size(), size, "");
+
+        m.put(keys.data().get(), values.data().get(), res1.data().get(), values.size());
+       
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Done" << std::endl;
+
+        thrust::host_vector<int> res1h = res1;
+
+        if(rep != 0) {
+            for(auto r : res1h) {
+                ASSERT(r == rep - 1, "put result error");
+            }
+        }
+
+        thrust::device_vector<cuda::std::pair<bool, int>> res2(size);
+        
+        std::cout << "Getting" << std::endl;
+        m.get(keys.data().get(), res2.data().get(), values.size());
+        
+        gpuErrchk(cudaDeviceSynchronize());
+        std::cout << "Done" << std::endl;
+
+        thrust::host_vector<cuda::std::pair<bool, int>> res2h = res2;
+
+        int count = 1;
+        for(auto r : res2h) {
+            ASSERT(r.first && r.second == rep, "get result error " + std::to_string(r.first) + " || " + std::to_string(r.second) + " != " + std::to_string(rep) + " key: " + std::to_string(count));
+            ++count;
+        }
+    }
+}
+
+template<typename T>
+struct device_group_allocator {
+
+    LSLAB_HOST device_group_allocator(groupallocator::GroupAllocator& alloc, size_t stack_size_ = 10000) : stack_size(stack_size_) {
+        gpuErrchk(cudaMalloc(&loc, sizeof(cuda::std::atomic<uint64_t>))); 
+        gpuErrchk(cudaMemset(loc, 0, sizeof(cuda::std::atomic<uint64_t>))); 
+        alloc.allocate(&mempool, sizeof(T) * stack_size, false);
+    }
+
+    LSLAB_HOST_DEVICE device_group_allocator(const device_group_allocator<T>& self) : stack_size(self.stack_size), loc(self.loc), mempool(self.mempool) {}
+    
+    LSLAB_HOST_DEVICE device_group_allocator(device_group_allocator&& other) {
+        stack_size = other.stack_size;
+        loc = other.loc;
+        mempool = other.mempool;
+
+        other.loc = nullptr;
+        other.mempool = nullptr;
+    }
+
+    LSLAB_HOST_DEVICE device_group_allocator& operator=(device_group_allocator&& other) {
+        #if defined(__CUDA_ARCH__)
+            if(loc != nullptr || mempool != nullptr)
+               __trap();
+        #else
+            if(loc != nullptr)
+                gpuErrchk(cudaFree(loc));
+        #endif
+
+        stack_size = other.stack_size;
+        loc = other.loc;
+        mempool = other.mempool;
+
+        other.loc = nullptr;
+        other.mempool = nullptr;
+    }
+
+    LSLAB_HOST_DEVICE ~device_group_allocator() {
+
+        // we let it leak for now
+
+        //#if !defined(__CUDA_ARCH__)
+        //    if(loc != nullptr)
+        //        gpuErrchk(cudaFree(static_cast<void*>(loc)));
+        //    if(mempool != nullptr)
+        //        gpuErrchk(cudaFree(mempool));
+        //#endif
+    }
+    
+    LSLAB_DEVICE T* allocate(size_t n) {
+        auto idx = loc->fetch_add(n);
+        if(idx >= stack_size) {
+            printf("At idx %llu\n", idx);
+            __trap();
+        }
+        return mempool + idx;
+    }
+
+    LSLAB_HOST_DEVICE void deallocate(T* ptr, size_t n) {}
+
+    size_t stack_size;
+    cuda::std::atomic<uint64_t>* loc;
+    T* mempool;
+};
+
+void GetPutTestGroupAllocator() {
+
+    groupallocator::GroupAllocator g(0, 2097152);
+
+    constexpr int size = 1024;
+
+    map<int, int, device_group_allocator<lslab::slab_node<int, int>>> m(10, device_group_allocator<lslab::slab_node<int, int>>(g));
 
     for (int rep = 0; rep < 100; rep++) {
         thrust::device_vector<int> keys(size);
@@ -447,6 +561,7 @@ void PutRemoveTest_128Bto128B() {
 int main() {
 
     GetPutTest();
+    GetPutTestGroupAllocator(); 
     //PutRemoveTest();
     //PutRemoveTest_uint64();
     //PutRemoveTest_128B();

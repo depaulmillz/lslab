@@ -108,6 +108,7 @@ struct traverse {
                         } else {
                             if(laneId == 31) {
                                 next_ptr = alloc.allocate(1);
+                                next_ptr = new (static_cast<void*>(next_ptr)) slab_node<K, V>();
                                 next->next = next_ptr;
                                 next = next_ptr;
                             }

@@ -50,16 +50,27 @@ public:
 
         cudaMemset(lock_table, 0, sizeof(warp_mutex) * size);
 
-        cudaMalloc(&buckets, sizeof(slab_node<K, V>) * size);
+        cudaMalloc(&buckets_array, sizeof(slab_node<K, V>) * size);
         
-        cudaMemset(buckets, 0, sizeof(slab_node<K, V>) * size);
+        cudaMemset(buckets_array, 0, sizeof(slab_node<K, V>) * size);
     }
 
-    LSLAB_HOST_DEVICE map(warp_mutex* lt, slab_node<K, V>* s, unsigned n_log_2) : lock_table(lt), buckets(s), number_of_buckets_log_2(n_log_2) {
+    LSLAB_HOST map(unsigned n_log_2, Allocator&& a) : number_of_buckets_log_2(n_log_2), alloc(a) {
+        size_t size = 1 << n_log_2;
+        cudaMalloc(&lock_table, sizeof(warp_mutex) * size);
+
+        cudaMemset(lock_table, 0, sizeof(warp_mutex) * size);
+
+        cudaMalloc(&buckets_array, sizeof(slab_node<K, V>) * size);
+        
+        cudaMemset(buckets_array, 0, sizeof(slab_node<K, V>) * size);
+    }
+    
+    LSLAB_HOST_DEVICE map(warp_mutex* lt, slab_node<K, V>* s, unsigned n_log_2) : lock_table(lt), buckets_array(s), number_of_buckets_log_2(n_log_2) {
 
     }
 
-    LSLAB_HOST_DEVICE map(warp_mutex* lt, slab_node<K, V>* s, unsigned n_log_2, Allocator a) : lock_table(lt), buckets(s), number_of_buckets_log_2(n_log_2), alloc(a) {
+    LSLAB_DEVICE map(warp_mutex* lt, slab_node<K, V>* s, unsigned n_log_2, Allocator&& a) : lock_table(lt), buckets_array(s), number_of_buckets_log_2(n_log_2), alloc(a) {
 
     }
 
@@ -72,7 +83,7 @@ public:
         size_t hash = Hash{}(key);
         hash &= ((1 << number_of_buckets_log_2) - 1);
 
-        traverse<Allocator, OPERATION_TYPE::FIND>{}(lock_table, buckets, key, fn, alloc, hash, thread_mask); 
+        traverse<Allocator, OPERATION_TYPE::FIND>{}(lock_table, buckets_array, key, fn, alloc, hash, thread_mask); 
     }
 
     LSLAB_DEVICE bool get(const K& key, V& value, bool thread_mask = true) {
@@ -96,7 +107,7 @@ public:
         using traverse_t = traverse<Allocator, OPERATION_TYPE::INSERT>;
         traverse_t t;
         size_t hash = Hash{}(key) & ((1 << number_of_buckets_log_2) - 1);
-        t.template operator()<K, V, Fn>(lock_table, buckets, key, std::forward<Fn>(fn), alloc, hash, thread_mask); 
+        t.template operator()<K, V, Fn>(lock_table, buckets_array, key, std::forward<Fn>(fn), alloc, hash, thread_mask); 
     }
 
     LSLAB_DEVICE V put(const K& key, const V& value, bool thread_mask = true) {
@@ -119,7 +130,7 @@ public:
 
     template<typename Fn>
     LSLAB_DEVICE bool update_function(const K& key, Fn&& fn, bool thread_mask = true) {
-        traverse<Allocator, OPERATION_TYPE::UPDATE>{}(lock_table, buckets, key, fn, alloc, Hash{}(key) & ((1 << number_of_buckets_log_2) - 1), thread_mask); 
+        traverse<Allocator, OPERATION_TYPE::UPDATE>{}(lock_table, buckets_array, key, fn, alloc, Hash{}(key) & ((1 << number_of_buckets_log_2) - 1), thread_mask); 
     }
 
     LSLAB_DEVICE cuda::std::pair<bool, V> update(const K& key, const V& value, bool thread_mask = true) {
@@ -161,13 +172,13 @@ public:
         update_<block_size, this_t, K, V><<<(size + block_size - 1) / block_size, block_size, 0, stream>>>(*this, operations, output, size);
     }
 
-    LSLAB_HOST_DEVICE unsigned size() {
+    LSLAB_HOST_DEVICE unsigned buckets() {
         return 1 << number_of_buckets_log_2;
     }
 
 private:
     warp_mutex* lock_table;
-    slab_node<K, V>* buckets;
+    slab_node<K, V>* buckets_array;
     unsigned number_of_buckets_log_2;
     Allocator alloc;
 };

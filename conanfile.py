@@ -7,7 +7,7 @@ class LSlabConan(ConanFile):
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"
     settings={"os" : ["Linux"], "compiler" : None, "build_type" : None, "arch": ["x86_64"] }
-    requires="unifiedmemorygroupallocation/1.1"
+    build_requires="unifiedmemorygroupallocation/1.1"
     generators="cmake_find_package"
     description = """The LSlab GPU hashmap was designed in the paper
     "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, 
