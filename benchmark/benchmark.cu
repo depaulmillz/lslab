@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
 
     std::cerr << "Populated" << std::endl;
 
+    std::cout << "---- Get -----" << std::endl;
 
     for (int rep = 0; rep < 10; rep++) {
 
@@ -122,5 +123,55 @@ int main(int argc, char** argv) {
         std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
     }
 
+    std::cout << "---- Put -----" << std::endl;
+
+    for (int rep = 0; rep < 10; rep++) {
+
+        thrust::host_vector<unsigned long long> keys(batch_size);
+        thrust::device_vector<unsigned long long> keys_device(batch_size);
+        thrust::device_vector<unsigned> values_device(batch_size);
+        thrust::device_vector<unsigned> results_device(batch_size);
+        
+        for (int i = 0; i < batch_size; ++i) {
+            unsigned long long key = static_cast<unsigned long long>(rand() / (double) RAND_MAX * (range));
+            keys[i] = key;
+        }
+
+        keys_device = keys;
+
+        gpuErrchk(cudaProfilerStart());
+        auto start = std::chrono::high_resolution_clock::now();
+        switch(cta_size) {
+            case 32:
+                m.put<32>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            case 64:
+                m.put<64>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            case 128:
+                m.put<128>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            case 256:
+                m.put<256>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            case 512:
+                m.put<512>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            case 1024:
+                m.put<1024>(keys_device.data().get(), values_device.data().get(), results_device.data().get(), keys_device.size());
+                break;
+            default:
+                std::cerr << "Size not supported" << std::endl;
+                return 1;
+        }
+        gpuErrchk(cudaStreamSynchronize(0x0));
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> dur = end - start;
+        gpuErrchk(cudaProfilerStop());
+
+        std::cout << "Standard Uniform test" << std::endl;
+        std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
+        std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
+    }
     return 0;
 }

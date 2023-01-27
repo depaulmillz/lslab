@@ -13,7 +13,7 @@ struct warp_mutex {
     LSLAB_DEVICE void lock() {
         if(threadIdx.x % 32 == 0) {
             int expect = 0;
-            while(!l.compare_exchange_strong(expect,-1)) {
+            while(!l.compare_exchange_strong(expect,-1, cuda::std::memory_order_acquire)) {
                 expect = 0;
             }
         }
@@ -22,15 +22,15 @@ struct warp_mutex {
 
     LSLAB_DEVICE void unlock() {
         if(threadIdx.x % 32 == 0) {
-            l.store(0);
+            l.store(0, cuda::std::memory_order_release);
         }
     }
     
     LSLAB_DEVICE void shared_lock() {
         if(threadIdx.x % 32 == 0) {
             while(true) {
-                int pred = l.load();
-                if(pred != -1 && l.compare_exchange_strong(pred, pred + 1)) {
+                int pred = l.load(cuda::std::memory_order_relaxed);
+                if(pred != -1 && l.compare_exchange_strong(pred, pred + 1, cuda::std::memory_order_acquire)) {
                     break;
                 }
             }
@@ -44,7 +44,7 @@ struct warp_mutex {
 
     LSLAB_DEVICE void shared_unlock() {
         if(threadIdx.x % 32 == 0) {
-            l.fetch_add(-1);
+            l.fetch_add(-1, cuda::std::memory_order_release);
         }
     }
 

@@ -17,11 +17,9 @@ enum OPERATION_TYPE {
 template<typename Allocator,
          int TYPE>
 struct traverse {
-
-#warning "Fix to warp_shared_lock"
-
+    
     template<typename T>
-    using Lock_t = typename std::conditional<TYPE == OPERATION_TYPE::FIND, warp_noop_lock<T>, warp_unique_lock<T>>::type;
+    using Lock_t = typename std::conditional<TYPE == OPERATION_TYPE::FIND, warp_shared_lock<T>, warp_unique_lock<T>>::type;
 
     template<typename K, typename V, typename Fn>
     LSLAB_DEVICE void operator()(warp_mutex* lock_table,
@@ -56,7 +54,7 @@ struct traverse {
             if(work_queue != last_work_queue) {
                 next = &buckets[src_bucket];
                 lock = Lock_t<warp_mutex>(lock_table[src_bucket]);
-                __threadfence_system();
+                //__threadfence_system();
             }
 
             slab_node<K, V>* next_ptr = nullptr;
@@ -133,7 +131,7 @@ struct traverse {
             work_queue = __ballot_sync(~0u, thread_mask);
 
             if(work_queue != last_work_queue){
-                __threadfence_system();
+                //__threadfence_system();
                 lock = Lock_t<warp_mutex>();
             }
         }
