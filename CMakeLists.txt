@@ -10,7 +10,7 @@ endif()
 include(cmake/config.cmake)
 
 check_cuda_version(11.0 11.6)
-set_consistent_standard(11)
+set_consistent_standard(17)
 
 find_package(UnifiedMemoryGroupAllocation REQUIRED)
 
@@ -22,7 +22,7 @@ endif()
 message(STATUS "Using CUDA ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    string(APPEND CMAKE_CUDA_FLAGS " -G -pg")
+    string(APPEND CMAKE_CUDA_FLAGS " -lineinfo -pg")
 endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -52,17 +52,17 @@ target_link_libraries(lslab INTERFACE UnifiedMemoryGroupAllocation::UnifiedMemor
 
 add_executable(lslab_benchmark benchmark/benchmark.cu)
 target_link_libraries(lslab_benchmark lslab)
-
-add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
-target_link_libraries(lslab_memory_benchmark lslab)
+#
+#add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
+#target_link_libraries(lslab_memory_benchmark lslab)
 
 add_executable(slabunified_test test/slabunified_test.cu)
 target_link_libraries(slabunified_test PRIVATE lslab)
 add_test(NAME slabunified_test COMMAND slabunified_test)
 
-add_executable(asanslabunified_test test/slabunified_test.cu)
-target_link_libraries(asanslabunified_test PRIVATE asan lslab gcov)
-target_compile_options(asanslabunified_test PRIVATE -Xcompiler '--sanitize=address') 
+#add_executable(asanslabunified_test test/slabunified_test.cu)
+#target_link_libraries(asanslabunified_test PRIVATE asan lslab gcov)
+#target_compile_options(asanslabunified_test PRIVATE -Xcompiler '--sanitize=address') 
 
 set(TARGETLIST lslab)
 

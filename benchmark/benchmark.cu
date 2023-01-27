@@ -2,110 +2,125 @@
 // Created by depaulsmiller on 9/3/20.
 //
 
-#include <LSlab/StandardSlabDefinitions.h>
 #include <vector>
-#include <LSlab/Slab.h>
+#include <lslab/map.h>
+#include <thrust/host_vector.h>
 #include <cuda_profiler_api.h>
+#include <algorithm>
+#include <thrust/device_vector.h>
+#include <thrust/sequence.h>
+#include <unistd.h>
 
-using namespace lslab;
+void usage(char* exec) {
+    std::cout << "Usage: " << exec << " [-s <size_log_2>] [-b <batch_size>] [-p <population_size>] [-r <range>] [-c <threads_per_cta>]" << std::endl;
+}
 
-const int BLOCKS = 128;
-const int THREADS_PER_BLOCK = 512;
+int main(int argc, char** argv) {
 
-int main() {
+    int size_log_2 = 20;
+    int batch_size = 1 << 10;
+    int popsize = (1 << size_log_2) / 2;
+    int range = 2 * (1 << size_log_2);
+    int cta_size = 256;
 
-    const int size = 1000000;
-
-    std::hash<unsigned> hfn;
-
-    SlabUnified<unsigned long long, unsigned, BLOCKS, THREADS_PER_BLOCK> s(size);
-    auto b = new BatchBuffer<unsigned long long, unsigned, BLOCKS, THREADS_PER_BLOCK>();
-
-    s.setGPU();
-    std::cerr << "Populating" << std::endl;
-
-    unsigned gen_key = 1;
-
-    int inserted = 0;
-    while (inserted < size / 2) {
-        int k = 0;
-        for (; k < size / 2 - inserted && k < THREADS_PER_BLOCK * BLOCKS; ++k) {
-            unsigned key = gen_key;
-            gen_key++;
-            b->getBatchKeys()[k] = key;
-            b->getHashValues()[k] = hfn(key);
-            b->getBatchRequests()[k] = REQUEST_INSERT;
-        }
-        for (; k < THREADS_PER_BLOCK * BLOCKS; ++k) {
-            b->getBatchRequests()[k] = REQUEST_EMPTY;
-        }
-
-        std::cerr << inserted << std::endl;
-        s.moveBufferToGPU(b, 0x0);
-        s.diy_batch(b, BLOCKS, THREADS_PER_BLOCK, 0x0);
-        s.moveBufferToCPU(b, 0x0);
-        gpuErrchk(cudaStreamSynchronize(0x0));
-
-        k = 0;
-        int loopCond = size / 2 - inserted;
-        for (; k < loopCond && k < THREADS_PER_BLOCK * BLOCKS; ++k) {
-            if (b->getBatchValues()[k] == 0)
-                inserted++;
+    char c;
+    while((c = getopt(argc, argv, "s:b:p:r:c:h")) != -1) {
+        switch(c) {
+            case 'c':
+                cta_size = atoi(optarg);
+                break;
+            case 'p':
+                popsize = atoi(optarg);
+                break;
+            case 'b':
+                batch_size = atoi(optarg);
+                break;
+            case 'r':
+                range = atoi(optarg);
+                break;
+            case 's':
+                size_log_2 = atoi(optarg);
+                if(size_log_2 >= 32) {
+                    return 1;
+                }
+                break;
+            default:
+                usage(argv[0]);
+                return 0;
         }
     }
+
+
+    int size = 1 << size_log_2;
+
+    lslab::map<unsigned long long, unsigned> m(size_log_2);
+
+    std::cerr << "Populating" << std::endl;
+
+    thrust::host_vector<unsigned long long> keys(popsize);
+
+    thrust::sequence(keys.begin(), keys.end(), 1);
+
+    thrust::device_vector<unsigned long long> keys_device = keys;
+    thrust::device_vector<unsigned> values_device(keys_device.size());
+    thrust::device_vector<unsigned> results_device(keys_device.size());
+
+    unsigned long long* k_d = keys_device.data().get();
+    unsigned* v_d = values_device.data().get();
+    unsigned* r_d = results_device.data().get();
+
+    m.put(k_d, v_d, r_d, keys.size());
 
     std::cerr << "Populated" << std::endl;
 
-    gpuErrchk(cudaProfilerStart());
 
     for (int rep = 0; rep < 10; rep++) {
 
-        for (int i = 0; i < THREADS_PER_BLOCK * BLOCKS; ++i) {
-            unsigned key = rand() / (double) RAND_MAX * (2 * size) + 1;
-            b->getBatchKeys()[i] = key;
-            b->getHashValues()[i] = hfn(key);
-            b->getBatchRequests()[i] = REQUEST_GET;
+        thrust::host_vector<unsigned long long> keys(batch_size);
+        thrust::device_vector<unsigned long long> keys_device(batch_size);
+        thrust::device_vector<cuda::std::pair<bool, unsigned>> values_device(batch_size);
+        
+        for (int i = 0; i < batch_size; ++i) {
+            unsigned long long key = static_cast<unsigned long long>(rand() / (double) RAND_MAX * (range));
+            keys[i] = key;
         }
 
+        keys_device = keys;
 
+        gpuErrchk(cudaProfilerStart());
         auto start = std::chrono::high_resolution_clock::now();
-        s.moveBufferToGPU(b, 0x0);
-        s.diy_batch(b, BLOCKS, THREADS_PER_BLOCK, 0x0);
-        s.moveBufferToCPU(b, 0x0);
+        switch(cta_size) {
+            case 32:
+                m.get<32>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            case 64:
+                m.get<64>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            case 128:
+                m.get<128>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            case 256:
+                m.get<256>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            case 512:
+                m.get<512>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            case 1024:
+                m.get<1024>(keys_device.data().get(), values_device.data().get(), keys_device.size());
+                break;
+            default:
+                std::cerr << "Size not supported" << std::endl;
+                return 1;
+        }
         gpuErrchk(cudaStreamSynchronize(0x0));
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> dur = end - start;
+        gpuErrchk(cudaProfilerStop());
 
         std::cout << "Standard Uniform test" << std::endl;
         std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
-        //std::cout << "Latency 2\t" << time << " ms" << std::endl;
-        //std::cout << "Throughput\t" << THREADS_PER_BLOCK * BLOCKS / (time * 1e3) << " Mops" << std::endl;
+        std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
     }
 
-    std::cout << "\nNo conflict test\n";
-
-    for (int rep = 0; rep < 10; rep++) {
-
-        auto start = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < THREADS_PER_BLOCK * BLOCKS; ++i) {
-            b->getBatchKeys()[i] = i + 1;
-            b->getHashValues()[i] = (i + 1) / 32;
-            b->getBatchRequests()[i] = REQUEST_GET;
-        }
-        s.moveBufferToGPU(b, 0x0);
-        s.diy_batch(b, BLOCKS, THREADS_PER_BLOCK, 0x0);
-        s.moveBufferToCPU(b, 0x0);
-        gpuErrchk(cudaStreamSynchronize(0x0));
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> dur = end - start;
-
-        std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
-        //std::cout << "Latency 2\t" << time << " ms" << std::endl;
-        //std::cout << "Throughput\t" << THREADS_PER_BLOCK * BLOCKS / (time * 1e3) << " Mops" << std::endl;
-        std::cout << "Arrival rate handled\t" << THREADS_PER_BLOCK * BLOCKS / (dur.count() * 1e6) << " Mops"
-                  << std::endl;
-
-    }
-    gpuErrchk(cudaProfilerStop());
-    delete b;
+    return 0;
 }
