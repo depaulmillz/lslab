@@ -45,5 +45,5 @@ class LSlabConan(ConanFile):
         self.info.header_only()
 
     def package_info(self):
-        self.cpp_info.names["cmake_find_package"] = "LSlab"
-        self.cpp_info.names["cmake_find_package_multi"] = "LSlab"
+        self.cpp_info.names["cmake_find_package"] = "lslab"
+        self.cpp_info.names["cmake_find_package_multi"] = "lslab"
