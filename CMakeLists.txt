@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(LSlab LANGUAGES CUDA CXX)
+project(lslab LANGUAGES CUDA CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
