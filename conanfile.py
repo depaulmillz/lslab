@@ -2,14 +2,13 @@ from conans import ConanFile, CMake
 
 class LSlabConan(ConanFile):
     name = "lslab"
-    version = "2.1.1"
+    version = "3.0.0"
     author = "dePaul Miller"
     url = "https://github.com/depaulmillz/lslab"
     license = "MIT"
     settings={"os" : ["Linux"], "compiler" : None, "build_type" : None, "arch": ["x86_64"] }
-    requires="unifiedmemorygroupallocation/1.1"
-    build_requires="gtest/1.10.0"
-    generators="cmake"
+    build_requires="unifiedmemorygroupallocation/1.1"
+    generators="cmake_find_package"
     description = """The LSlab GPU hashmap was designed in the paper
     "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, 
     Jacob Nelson, Ahmed Hassan, and Roberto Palmieri."
@@ -29,7 +28,6 @@ class LSlabConan(ConanFile):
         cmake = CMake(self)
         cmake.definitions["CMAKE_CUDA_ARCHITECTURES"] = str(self.options.cuda_arch)
         cmake.definitions["CMAKE_CUDA_COMPILER"] = str(self.options.cuda_compiler)
-        cmake.definitions["USING_CONAN"] = "ON"
         cmake.definitions["CMAKE_EXPORT_COMPILE_COMMANDS"] = "ON"
         cmake.configure()
         return cmake
@@ -47,5 +45,5 @@ class LSlabConan(ConanFile):
         self.info.header_only()
 
     def package_info(self):
-        self.cpp_info.names["cmake_find_package"] = "LSlab"
-        self.cpp_info.names["cmake_find_package_multi"] = "LSlab"
+        self.cpp_info.names["cmake_find_package"] = "lslab"
+        self.cpp_info.names["cmake_find_package_multi"] = "lslab"

@@ -1,0 +1,17 @@
+@inproceedings{10.1145/3456727.3463779,
+author = {Miller, dePaul and Nelson, Jacob and Hassan, Ahmed and Palmieri, Roberto},
+title = {KVCG: A Heterogeneous Key-Value Store for Skewed Workloads},
+year = {2021},
+isbn = {9781450383981},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3456727.3463779},
+doi = {10.1145/3456727.3463779},
+abstract = {We present KVCG, a novel heterogeneous key-value store whose primary objective is to serve client requests targeting frequently accessed (hot) keys at sub-millisecond latency and requests targeting less frequently accessed (cold) keys with high throughput. To accomplish this goal, KVCG deploys an architecture where requests on hot keys are routed to a software cache operated by CPU threads, while the remainder are offloaded to a data repository optimized for execution on modern GPU devices. Cold/hot partitioning is done at runtime through a model trained with the incoming workload. Against a state-of-the-art competitor, we obtain up to 34x improvement in latency.},
+booktitle = {Proceedings of the 14th ACM International Conference on Systems and Storage},
+articleno = {5},
+numpages = {12},
+keywords = {heterogeneous computing, concurrency, key-value stores},
+location = {Haifa, Israel},
+series = {SYSTOR '21}
+}

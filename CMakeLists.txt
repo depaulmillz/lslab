@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(LSlab LANGUAGES CUDA CXX)
-
-option(USING_CONAN "Set if building through the conan script" OFF)
+project(lslab LANGUAGES CUDA CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -12,8 +10,9 @@ endif()
 include(cmake/config.cmake)
 
 check_cuda_version(11.0 11.6)
-set_consistent_standard(11)
-setup_conan()
+set_consistent_standard(17)
+
+find_package(UnifiedMemoryGroupAllocation REQUIRED)
 
 if(NOT CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES "70;75;80;86")
@@ -23,7 +22,7 @@ endif()
 message(STATUS "Using CUDA ARCHITECTURES ${CMAKE_CUDA_ARCHITECTURES}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    string(APPEND CMAKE_CUDA_FLAGS " -G -pg")
+    string(APPEND CMAKE_CUDA_FLAGS " -lineinfo -pg")
 endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -49,21 +48,24 @@ add_library(lslab INTERFACE)
 target_include_directories(lslab INTERFACE 
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
-target_link_libraries(lslab INTERFACE CONAN_PKG::unifiedmemorygroupallocation)
 
 add_executable(lslab_benchmark benchmark/benchmark.cu)
 target_link_libraries(lslab_benchmark lslab)
-
-add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
-target_link_libraries(lslab_memory_benchmark lslab)
+#
+#add_executable(lslab_memory_benchmark benchmark/benchmark_mem.cu)
+#target_link_libraries(lslab_memory_benchmark lslab)
 
 add_executable(slabunified_test test/slabunified_test.cu)
-target_link_libraries(slabunified_test PRIVATE lslab CONAN_PKG::gtest)
+target_link_libraries(slabunified_test PRIVATE lslab UnifiedMemoryGroupAllocation::UnifiedMemoryGroupAllocation)
 add_test(NAME slabunified_test COMMAND slabunified_test)
 
-add_executable(asanslabunified_test test/slabunified_test.cu)
-target_link_libraries(asanslabunified_test PRIVATE asan lslab CONAN_PKG::gtest gcov)
-target_compile_options(asanslabunified_test PRIVATE -Xcompiler '--sanitize=address') 
+add_executable(set_test test/set_test.cu)
+target_link_libraries(set_test PRIVATE lslab)
+add_test(NAME set_test COMMAND set_test)
+
+#add_executable(asanslabunified_test test/slabunified_test.cu)
+#target_link_libraries(asanslabunified_test PRIVATE asan lslab gcov)
+#target_compile_options(asanslabunified_test PRIVATE -Xcompiler '--sanitize=address') 
 
 set(TARGETLIST lslab)
 
