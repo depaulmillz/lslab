@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #include "lslab.h"
 
 #pragma once

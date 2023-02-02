@@ -1,5 +1,5 @@
-#include "lslab.h"
-#include "warp_mutex.h"
+#include "../lslab.h"
+#include "../warp_mutex.h"
 #include "slab_node.h"
 #include <cuda.h>
 #include <cub/util_ptx.cuh>
@@ -7,6 +7,8 @@
 #pragma once
 
 namespace lslab {
+
+namespace detail {
 
 enum OPERATION_TYPE {
     INSERT,
@@ -262,4 +264,5 @@ struct traverse {
     }
 
 };
+}
 }

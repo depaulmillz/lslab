@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 #include "lslab.h"
 #include <atomic>
 #include <cuda/atomic>

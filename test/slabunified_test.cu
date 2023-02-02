@@ -159,7 +159,7 @@ void GetPutTestGroupAllocator() {
 
     constexpr int size = 1024;
 
-    map<int, int, device_group_allocator<lslab::slab_node<int, int>>> m(10, device_group_allocator<lslab::slab_node<int, int>>(g));
+    map<int, int, device_group_allocator<lslab::detail::slab_node<int, int>>> m(10, device_group_allocator<lslab::detail::slab_node<int, int>>(g));
 
     for (int rep = 0; rep < 100; rep++) {
         thrust::device_vector<int> keys(size);

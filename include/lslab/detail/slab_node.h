@@ -1,4 +1,4 @@
-#include "lslab.h"
+#include "../lslab.h"
 #include <atomic>
 #include <cub/util_ptx.cuh>
 #include <type_traits>
@@ -7,6 +7,8 @@
 #pragma once
 
 namespace lslab {
+
+namespace detail {
 
 template<typename K_, typename V_>
 struct slab_node {
@@ -32,4 +34,5 @@ struct set_node {
     set_node<K>* next = nullptr;
 }; 
 
+}
 }
