@@ -7,6 +7,7 @@
 #include <thrust/device_vector.h>
 #include <cuda.h>
 #include <cuda/std/utility>
+#include "hash.h"
 
 #pragma once
 
@@ -23,13 +24,6 @@ __global__ void get_(map_t map, K* operations, cuda::std::pair<bool, V>* output,
 
 template<int block_size, typename map_t, typename K, typename V>
 __global__ void update_(map_t map, cuda::std::pair<K, V>* operations, cuda::std::pair<bool, V>* output, size_t size);
-
-template<typename T>
-struct hash {
-    LSLAB_HOST_DEVICE size_t operator()(T x) {
-        return static_cast<size_t>(x);
-    }
-};
 
 /**
  * LSlab map for GPU

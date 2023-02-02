@@ -59,6 +59,10 @@ add_executable(slabunified_test test/slabunified_test.cu)
 target_link_libraries(slabunified_test PRIVATE lslab UnifiedMemoryGroupAllocation::UnifiedMemoryGroupAllocation)
 add_test(NAME slabunified_test COMMAND slabunified_test)
 
+add_executable(set_test test/set_test.cu)
+target_link_libraries(set_test PRIVATE lslab)
+add_test(NAME set_test COMMAND set_test)
+
 #add_executable(asanslabunified_test test/slabunified_test.cu)
 #target_link_libraries(asanslabunified_test PRIVATE asan lslab gcov)
 #target_compile_options(asanslabunified_test PRIVATE -Xcompiler '--sanitize=address') 
