@@ -10,6 +10,7 @@ namespace lslab {
 namespace map_kernels {
 
 template<int block_size, typename map_t, typename K, typename V>
+__launch_bounds__(block_size)
 __global__ void put_(map_t map, cuda::std::pair<K, V>* operations, V* output, size_t size) {
     
     int tidx = threadIdx.x;
@@ -30,6 +31,7 @@ __global__ void put_(map_t map, cuda::std::pair<K, V>* operations, V* output, si
 }
 
 template<int block_size, typename map_t, typename K, typename V>
+__launch_bounds__(block_size)
 __global__ void put_(map_t map, K* operations_keys, V* operations_values, V* output, size_t size) {
     
     int tidx = threadIdx.x;
@@ -51,6 +53,7 @@ __global__ void put_(map_t map, K* operations_keys, V* operations_values, V* out
 
 
 template<int block_size, typename map_t, typename K, typename V>
+__launch_bounds__(block_size)
 __global__ void get_(map_t map, K* operations, cuda::std::pair<bool, V>* output, size_t size) {
 
     int tidx = threadIdx.x;
@@ -70,6 +73,7 @@ __global__ void get_(map_t map, K* operations, cuda::std::pair<bool, V>* output,
 }
 
 template<int block_size, typename map_t, typename K, typename V>
+__launch_bounds__(block_size)
 __global__ void update_(map_t map, cuda::std::pair<K, V>* operations, cuda::std::pair<bool, V>* output, size_t size) {
 
     int tidx = threadIdx.x;

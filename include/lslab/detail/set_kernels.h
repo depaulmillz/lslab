@@ -8,6 +8,7 @@ namespace lslab {
 namespace set_kernels {
 
 template<int block_size, typename map_t, typename K>
+__launch_bounds__(block_size)
 __global__ void remove_(map_t map, const K* keys, bool* output, size_t size) {
     
     int tidx = threadIdx.x;
@@ -26,6 +27,7 @@ __global__ void remove_(map_t map, const K* keys, bool* output, size_t size) {
 }
 
 template<int block_size, typename map_t, typename K>
+__launch_bounds__(block_size)
 __global__ void contains_(map_t map, const K* keys, bool* output, size_t size) {
     
     int tidx = threadIdx.x;
@@ -45,6 +47,7 @@ __global__ void contains_(map_t map, const K* keys, bool* output, size_t size) {
 
 
 template<int block_size, typename map_t, typename K>
+__launch_bounds__(block_size)
 __global__ void insert_(map_t map, const K* keys, bool* output, size_t size) {
 
     int tidx = threadIdx.x;

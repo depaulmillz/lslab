@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 void usage(char* exec) {
-    std::cout << "Usage: " << exec << " [-s <size_log_2>] [-b <batch_size>] [-p <population_size>] [-r <range>] [-c <threads_per_cta>]" << std::endl;
+    std::cout << "Usage: " << exec << " [-s <size_log_2>] [-b <batch_size>] [-p <population_size>] [-r <range>] [-c <threads_per_cta>] [-x]" << std::endl;
 }
 
 int main(int argc, char** argv) {
@@ -22,9 +22,10 @@ int main(int argc, char** argv) {
     int popsize = (1 << size_log_2) / 2;
     int range = 2 * (1 << size_log_2);
     int cta_size = 256;
+    bool exportable = false;
 
     char c;
-    while((c = getopt(argc, argv, "s:b:p:r:c:h")) != -1) {
+    while((c = getopt(argc, argv, "s:b:p:r:c:hx")) != -1) {
         switch(c) {
             case 'c':
                 cta_size = atoi(optarg);
@@ -44,6 +45,9 @@ int main(int argc, char** argv) {
                     return 1;
                 }
                 break;
+            case 'x':
+                exportable = true;
+                break;
             default:
                 usage(argv[0]);
                 return 0;
@@ -55,7 +59,9 @@ int main(int argc, char** argv) {
 
     lslab::map<unsigned long long, unsigned> m(size_log_2);
 
-    std::cerr << "Populating" << std::endl;
+    if(!exportable) {
+        std::cerr << "Populating" << std::endl;
+    }
 
     thrust::host_vector<unsigned long long> keys(popsize);
 
@@ -71,9 +77,12 @@ int main(int argc, char** argv) {
 
     m.put(k_d, v_d, r_d, keys.size());
 
-    std::cerr << "Populated" << std::endl;
-
-    std::cout << "---- Get -----" << std::endl;
+    if(!exportable) {
+        std::cerr << "Populated" << std::endl;
+        std::cout << "---- Get -----" << std::endl;
+    } else {
+        std::cout << "Alg,throughput,latency" << std::endl;
+    }
 
     for (int rep = 0; rep < 10; rep++) {
 
@@ -117,13 +126,19 @@ int main(int argc, char** argv) {
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> dur = end - start;
         gpuErrchk(cudaProfilerStop());
-
-        std::cout << "Standard Uniform test" << std::endl;
-        std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
-        std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
+        
+        if(!exportable) {
+            std::cout << "Standard Uniform test" << std::endl;
+            std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
+            std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
+        } else {
+            std::cout << "get," << batch_size / dur.count() / 1e6  << "," << dur.count() * 1e3 << std::endl;
+        }
     }
 
-    std::cout << "---- Put -----" << std::endl;
+    if(!exportable) {
+        std::cout << "---- Put -----" << std::endl;
+    }
 
     for (int rep = 0; rep < 10; rep++) {
 
@@ -169,9 +184,13 @@ int main(int argc, char** argv) {
         std::chrono::duration<double> dur = end - start;
         gpuErrchk(cudaProfilerStop());
 
-        std::cout << "Standard Uniform test" << std::endl;
-        std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
-        std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
+        if(!exportable) {
+            std::cout << "Standard Uniform test" << std::endl;
+            std::cout << "Latency\t" << dur.count() * 1e3 << " ms" << std::endl;
+            std::cout << "Throughput\t" << batch_size / dur.count() / 1e6 << " Mops" << std::endl;
+        } else {
+            std::cout << "put," << batch_size / dur.count() / 1e6  << "," << dur.count() * 1e3 << std::endl;
+        }
     }
     return 0;
 }
