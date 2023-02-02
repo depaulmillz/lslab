@@ -1,9 +1,5 @@
 var searchData=
 [
-  ['get_12',['get',['../classlslab_1_1LSlab.html#ae2ff99ea454e74198d6f91f80caf975b',1,'lslab::LSlab']]],
-  ['gpuassert_5fslab_13',['gpuAssert_slab',['../LSlab_8h.html#aca9ec52d135c5a3eb175ff4b5611415f',1,'lslab']]],
-  ['gpucpu2darray_14',['GPUCPU2DArray',['../structlslab_1_1GPUCPU2DArray.html',1,'lslab']]],
-  ['gpucpumemory_15',['GPUCPUMemory',['../structlslab_1_1GPUCPUMemory.html',1,'lslab']]],
-  ['gpucpumemory_3c_20t_20_2a_20_3e_16',['GPUCPUMemory&lt; T * &gt;',['../structlslab_1_1GPUCPUMemory.html',1,'lslab']]],
-  ['gpumemory_2eh_17',['gpumemory.h',['../gpumemory_8h.html',1,'']]]
+  ['get_4',['get',['../classlslab_1_1map.html#ae5ddc71c505d3d1811dce31b21ed994e',1,'lslab::map::get(const K &amp;key, V &amp;value, bool thread_mask=true)'],['../classlslab_1_1map.html#a3b6f3eb48c79e4b935724173e14f8073',1,'lslab::map::get(K *operations, cuda::std::pair&lt; bool, V &gt; *output, size_t size, cudaStream_t stream=0x0)']]],
+  ['gpuassert_5fslab_5',['gpuAssert_slab',['../lslab_8h.html#aca9ec52d135c5a3eb175ff4b5611415f',1,'lslab']]]
 ];

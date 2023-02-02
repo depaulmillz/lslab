@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['data_5ft_107',['data_t',['../structlslab_1_1data__t.html#ab7d472436d128ebb156fb09631257d7d',1,'lslab::data_t::data_t()'],['../structlslab_1_1data__t.html#aa599ca282abe64726e19bc9f64d7c741',1,'lslab::data_t::data_t(size_t s)']]],
-  ['deallocate_108',['deallocate',['../structlslab_1_1WarpAllocCtx.html#a51c5030a24c68c1bd7a4f6b7c1de84be',1,'lslab::WarpAllocCtx']]],
-  ['diy_5fbatch_109',['diy_batch',['../classlslab_1_1SlabUnified.html#a81274d71d0a522ff960fe08d18ad1f44',1,'lslab::SlabUnified']]]
+  ['get_57',['get',['../classlslab_1_1map.html#ae5ddc71c505d3d1811dce31b21ed994e',1,'lslab::map::get(const K &amp;key, V &amp;value, bool thread_mask=true)'],['../classlslab_1_1map.html#a3b6f3eb48c79e4b935724173e14f8073',1,'lslab::map::get(K *operations, cuda::std::pair&lt; bool, V &gt; *output, size_t size, cudaStream_t stream=0x0)']]],
+  ['gpuassert_5fslab_58',['gpuAssert_slab',['../lslab_8h.html#aca9ec52d135c5a3eb175ff4b5611415f',1,'lslab']]]
 ];

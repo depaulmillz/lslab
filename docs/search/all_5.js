@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['key_19',['key',['../structlslab_1_1SlabData.html#acb11fe35809f8675c6140ae597c3b625',1,'lslab::SlabData']]]
+  ['insert_5ffunction_8',['insert_function',['../classlslab_1_1map.html#a02f37387e10e2a8f2ce46fee95a7fd6c',1,'lslab::map']]]
 ];

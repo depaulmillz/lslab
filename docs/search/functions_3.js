@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['get_110',['get',['../classlslab_1_1LSlab.html#ae2ff99ea454e74198d6f91f80caf975b',1,'lslab::LSlab']]],
-  ['gpuassert_5fslab_111',['gpuAssert_slab',['../LSlab_8h.html#aca9ec52d135c5a3eb175ff4b5611415f',1,'lslab']]]
+  ['insert_5ffunction_59',['insert_function',['../classlslab_1_1map.html#a02f37387e10e2a8f2ce46fee95a7fd6c',1,'lslab::map']]]
 ];

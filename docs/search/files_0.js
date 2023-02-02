@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gpumemory_2eh_97',['gpumemory.h',['../gpumemory_8h.html',1,'']]]
+  ['device_5fallocator_2eh_47',['device_allocator.h',['../device__allocator_8h.html',1,'']]]
 ];

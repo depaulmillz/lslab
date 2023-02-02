@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['modify_113',['modify',['../classlslab_1_1LSlab.html#acc2ea09d9bac8d563d69154d387e6c0e',1,'lslab::LSlab']]],
-  ['movebuffertocpu_114',['moveBufferToCPU',['../classlslab_1_1SlabUnified.html#a1aabd6a6659377ea3006f83ffeb1f7b1',1,'lslab::SlabUnified']]],
-  ['movebuffertogpu_115',['moveBufferToGPU',['../classlslab_1_1SlabUnified.html#a7978c2541ca947d2367c92beed3ae116',1,'lslab::SlabUnified']]]
+  ['put_61',['put',['../classlslab_1_1map.html#a1fe0ea1ca675035c501a34c39309b289',1,'lslab::map::put(const K &amp;key, const V &amp;value, bool thread_mask=true)'],['../classlslab_1_1map.html#a9cf866a6a3972b2e89b1560bbec74477',1,'lslab::map::put(cuda::std::pair&lt; K, V &gt; *operations, V *output, size_t size, cudaStream_t stream=0x0)'],['../classlslab_1_1map.html#ae5c200f813d73de17b4e90bf46be255e',1,'lslab::map::put(K *operations_keys, V *operations_values, V *output, size_t size, cudaStream_t stream=0x0)']]]
 ];

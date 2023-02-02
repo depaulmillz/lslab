@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['batchbuffer_75',['BatchBuffer',['../classlslab_1_1BatchBuffer.html',1,'lslab']]]
+  ['hash_34',['hash',['../structlslab_1_1hash.html',1,'lslab']]]
 ];

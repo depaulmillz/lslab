@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['operator_3d_116',['operator=',['../structlslab_1_1data__t.html#a0356fadc379c249edf52e7c9bd8c3dc1',1,'lslab::data_t::operator=(const data_t &amp;rhs)'],['../structlslab_1_1data__t.html#a6b0150bfbdcf8bc46fc1a813b62dc410',1,'lslab::data_t::operator=(const data_t &amp;rhs) volatile']]],
-  ['operator_3d_3d_117',['operator==',['../structlslab_1_1data__t.html#ae243ed7f674972f412f852c21c9f8aea',1,'lslab::data_t']]]
+  ['update_62',['update',['../classlslab_1_1map.html#ae7a75b1ed14879bd3223b68cef204f06',1,'lslab::map::update(const K &amp;key, const V &amp;value, bool thread_mask=true)'],['../classlslab_1_1map.html#a9eab92edcd2266643777b32bb1a0a475',1,'lslab::map::update(cuda::std::pair&lt; K, V &gt; *operations, cuda::std::pair&lt; bool, V &gt; *output, size_t size, cudaStream_t stream=0x0)']]],
+  ['update_5ffunction_63',['update_function',['../classlslab_1_1map.html#a8da61288b9770c55b27e540a9fdbfaf1',1,'lslab::map']]]
 ];
