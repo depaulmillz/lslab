@@ -9,7 +9,7 @@ endif()
 
 include(cmake/config.cmake)
 
-check_cuda_version(11.0 11.6)
+check_cuda_version(11.0 12.1)
 set_consistent_standard(17)
 
 find_package(UnifiedMemoryGroupAllocation REQUIRED)
