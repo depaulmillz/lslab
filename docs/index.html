@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>LSLab: LSlab</title>
+<title>LSLab: lslab</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,7 +62,7 @@ $(function() {
 
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">LSlab </div>  </div>
+<div class="title">lslab </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_README"></a> Designed in "KVCG: A Heterogeneous Key-Value Store for Skewed Workloads" by dePaul Miller, Jacob Nelson, Ahmed Hassan, and Roberto Palmieri.</p>
@@ -71,10 +71,10 @@ Hardware</h2>
 <p>Runs on Volta, sm_70, or greater.</p>
 <h2><a class="anchor" id="autotoc_md2"></a>
 Building</h2>
-<p>Requires CMake &gt;= 3.18, Conan, and a CUDA version in 11.0 to 11.6.</p>
+<p>Requires CMake &gt;= 3.18, Conan, and a CUDA version in 11.0 to 12.1.</p>
 <p>We also require <a href="https://github.com/depaulmillz/UnifiedMemoryGroupAllocation">UnifiedMemoryGroupAllocation</a> built through conan.</p>
 <p>Get CMake from kitware and Conan from your favorite python package manager.</p>
-<p>It is easiest to get conan from pip by running </p><div class="fragment"><div class="line">pip install conan</div>
+<p>It is easiest to get conan from pip by running </p><div class="fragment"><div class="line">pip install conan==1.58</div>
 </div><!-- fragment --><p><a href="https://cmake.org">Install CMake from Here!</a></p>
 <p>Next make a build directory and install with conan, and then build. </p><div class="fragment"><div class="line">mkdir build</div>
 <div class="line">cd build</div>
@@ -83,22 +83,25 @@ Building</h2>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md3"></a>
 Conan Options</h2>
 <ul>
-<li>cuda_arch is an option to specify the SM architecture you want to compile for, by default we compile for sm70 to sm86</li>
-<li>cuda_compiler is an option to specify the CUDA compiler for example nvcc or clang++-13</li>
+<li>cuda_arch is an option to specify the SM architecture you want to compile for, by default we compile for sm70 to sm90</li>
+<li>cuda_compiler is an option to specify the CUDA compiler for example nvcc</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md4"></a>
 Code Organization</h2>
 <ul>
-<li>include/LSlab contains all of the LSlab code</li>
-<li>LSlab.h contains basic macros</li>
-<li>LSlabMap.h contains a GPU interface for the map</li>
-<li>Operations.h contains code for setting up lslab on the host</li>
-<li>OperationsDevice.h contains code for using lslab on the device</li>
-<li>Slab.h contains basic structures for the host</li>
-<li>StandardSlabDefinitions.h contains definitions used by lslab</li>
-<li>gpumemory.h contains GPU memory management functions.</li>
-<li>stdrequestHandler.cuh contains kernels</li>
+<li>include/lslab contains all of the lslab code<ul>
+<li><a class="el" href="lslab_8h.html">lslab.h</a> contains basic macros</li>
+<li>map.h contains a GPU interface for the map</li>
+<li><a class="el" href="hash_8h.html">hash.h</a> contains GPU hash functions</li>
+<li>device_allocator.h contains a device allocator</li>
+<li><a class="el" href="mutex_8h.html">mutex.h</a> contains a mutex implementation</li>
+<li><a class="el" href="set_8h.html">set.h</a> contains the set implementation</li>
+<li><a class="el" href="warp__mutex_8h.html">warp_mutex.h</a> contains a cooperative warp mutex</li>
+<li>detail contains extra implementation details</li>
+</ul>
+</li>
 <li>test contains tests</li>
+<li>benchmark contains benchmarks</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md5"></a>
 Clang Support</h1>
